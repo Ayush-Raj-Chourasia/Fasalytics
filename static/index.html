@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fasalytics - AI-Powered Agriculture Insights</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <!-- Navigation -->
+    <nav class="navbar">
+        <div class="nav-container">
+            <!-- Left Side - Dashboard -->
+            <div class="nav-left">
+                <div class="dropdown">
+                    <a href="#" class="nav-link dashboard-link">
+                        <i class="fas fa-chart-line"></i>
+                        Live Dashboard
+                        <i class="fas fa-chevron-down dropdown-arrow"></i>
+                    </a>
+                    <div class="dropdown-content dashboard-dropdown">
+                        <a href="#"><i class="fas fa-leaf"></i> Crop Health Analysis</a>
+                        <a href="#"><i class="fas fa-seedling"></i> Soil Condition</a>
+                        <a href="#"><i class="fas fa-bug"></i> Pest Risk Prediction</a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Center - Logo and Main Nav -->
+            <div class="nav-center">
+                <div class="logo">
+                    <i class="fas fa-satellite"></i>
+                    <span>Fasalytics</span>
+                </div>
+                
+                <div class="nav-links">
+                    <a href="#home" class="nav-link">Home</a>
+                    <a href="#reports" class="nav-link">Reports</a>
+                    <a href="#about" class="nav-link">About Fasalytics</a>
+                    
+                    <div class="dropdown">
+                        <a href="#" class="nav-link">
+                            What We Do
+                            <i class="fas fa-chevron-down dropdown-arrow"></i>
+                        </a>
+                        <div class="dropdown-content">
+                            <a href="#expertise">Our Expertise</a>
+                            <a href="#locations">Where We Work</a>
+                            <a href="#process">How We Work</a>
+                        </div>
+                    </div>
+                    
+                    <a href="#contact" class="nav-link">Contact Us</a>
+                </div>
+            </div>
+
+            <!-- Mobile Menu Toggle -->
+            <div class="mobile-menu-toggle">
+                <i class="fas fa-bars"></i>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div class="mobile-menu">
+            <a href="#home">Home</a>
+            <a href="#reports">Reports</a>
+            <a href="#about">About Fasalytics</a>
+            <a href="#expertise">Our Expertise</a>
+            <a href="#locations">Where We Work</a>
+            <a href="#process">How We Work</a>
+            <a href="#contact">Contact Us</a>
+            <div class="mobile-dashboard">
+                <h4>Live Dashboard</h4>
+                <a href="#"><i class="fas fa-leaf"></i> Crop Health Analysis</a>
+                <a href="#"><i class="fas fa-seedling"></i> Soil Condition</a>
+                <a href="#"><i class="fas fa-bug"></i> Pest Risk Prediction</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section id="home" class="hero">
+        <div class="hero-content">
+            <div class="hero-text">
+                <h1>AI-Powered Agriculture Insights</h1>
+                <p>Transforming farming with intelligent crop health, soil, and pest monitoring</p>
+                <div class="hero-buttons">
+                    <a href="#features" class="btn btn-primary">Get Started</a>
+                    <a href="#dashboard" class="btn btn-secondary">View Live Dashboard</a>
+                </div>
+            </div>
+            <div class="hero-image">
+                <div class="hero-visual">
+                    <div class="satellite-icon">
+                        <i class="fas fa-satellite-dish"></i>
+                    </div>
+                    <div class="data-points">
+                        <div class="data-point" style="top: 20%; left: 15%;">
+                            <div class="pulse"></div>
+                            <span>Crop Health: 87%</span>
+                        </div>
+                        <div class="data-point" style="top: 60%; left: 70%;">
+                            <div class="pulse"></div>
+                            <span>Soil Moisture: 68%</span>
+                        </div>
+                        <div class="data-point" style="top: 40%; left: 40%;">
+                            <div class="pulse"></div>
+                            <span>Pest Risk: Low</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mission Section -->
+    <section class="mission">
+        <div class="container">
+            <div class="mission-content">
+                <h2>Our Mission</h2>
+                <p>Fasalytics empowers farmers and agricultural professionals with cutting-edge AI technology to make data-driven decisions. We combine multispectral imaging, IoT sensors, and machine learning to create sustainable, efficient farming practices that increase yields while protecting our environment.</p>
+                <div class="mission-stats">
+                    <div class="stat">
+                        <h3>500+</h3>
+                        <p>Farms Monitored</p>
+                    </div>
+                    <div class="stat">
+                        <h3>25%</h3>
+                        <p>Average Yield Increase</p>
+                    </div>
+                    <div class="stat">
+                        <h3>40%</h3>
+                        <p>Reduction in Pesticide Use</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section -->
+    <section id="features" class="features">
+        <div class="container">
+            <h2>Comprehensive Agricultural Intelligence</h2>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-leaf"></i>
+                    </div>
+                    <h3>Crop Health Monitoring</h3>
+                    <p>Advanced multispectral imaging and AI analysis to detect early signs of disease, nutrient deficiencies, and stress factors in your crops.</p>
+                    <ul>
+                        <li>NDVI & vegetation indices</li>
+                        <li>Disease detection</li>
+                        <li>Growth stage monitoring</li>
+                        <li>Yield prediction</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-seedling"></i>
+                    </div>
+                    <h3>Soil Condition Analysis</h3>
+                    <p>Real-time soil monitoring using IoT sensors and satellite data to optimize irrigation, fertilization, and soil management practices.</p>
+                    <ul>
+                        <li>Moisture & temperature tracking</li>
+                        <li>pH & nutrient levels</li>
+                        <li>Soil compaction analysis</li>
+                        <li>Irrigation recommendations</li>
+                    </ul>
+                </div>
+
+                <div class="feature-card">
+                    <div class="feature-icon">
+                        <i class="fas fa-bug"></i>
+                    </div>
+                    <h3>Pest Risk Prediction</h3>
+                    <p>Predictive analytics and computer vision to identify pest threats before they become problems, enabling targeted interventions.</p>
+                    <ul>
+                        <li>Early pest detection</li>
+                        <li>Weather-based risk modeling</li>
+                        <li>Treatment recommendations</li>
+                        <li>Biological control insights</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Reports Section -->
+    <section id="reports" class="reports">
+        <div class="container">
+            <h2>Data-Driven Insights</h2>
+            <div class="reports-content">
+                <div class="reports-text">
+                    <h3>Comprehensive Analytics Dashboard</h3>
+                    <p>Access detailed reports and visualizations that transform complex agricultural data into actionable insights. Our platform provides real-time monitoring, historical trends, and predictive analytics to help you make informed decisions.</p>
+                    <div class="report-features">
+                        <div class="report-feature">
+                            <i class="fas fa-chart-bar"></i>
+                            <span>Interactive Data Visualization</span>
+                        </div>
+                        <div class="report-feature">
+                            <i class="fas fa-download"></i>
+                            <span>Exportable Reports</span>
+                        </div>
+                        <div class="report-feature">
+                            <i class="fas fa-mobile-alt"></i>
+                            <span>Mobile-Friendly Interface</span>
+                        </div>
+                        <div class="report-feature">
+                            <i class="fas fa-bell"></i>
+                            <span>Real-Time Alerts</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="reports-visual">
+                    <div class="dashboard-preview">
+                        <div class="dashboard-header">
+                            <h4>Farm Health Overview</h4>
+                            <span class="status-indicator">Live</span>
+                        </div>
+                        <div class="dashboard-metrics">
+                            <div class="metric">
+                                <span class="metric-value">87%</span>
+                                <span class="metric-label">Crop Health</span>
+                                <div class="metric-bar">
+                                    <div class="metric-fill" style="width: 87%;"></div>
+                                </div>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-value">68%</span>
+                                <span class="metric-label">Soil Moisture</span>
+                                <div class="metric-bar">
+                                    <div class="metric-fill" style="width: 68%;"></div>
+                                </div>
+                            </div>
+                            <div class="metric">
+                                <span class="metric-value">Low</span>
+                                <span class="metric-label">Pest Risk</span>
+                                <div class="metric-bar">
+                                    <div class="metric-fill low-risk" style="width: 25%;"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section id="about" class="about">
+        <div class="container">
+            <div class="about-content">
+                <div class="about-text">
+                    <h2>About Fasalytics</h2>
+                    <p>Founded by agricultural scientists and AI experts, Fasalytics bridges the gap between cutting-edge technology and practical farming solutions. We believe that sustainable agriculture is the key to feeding our growing population while preserving our planet.</p>
+                    <p>Our team combines decades of agricultural expertise with the latest advances in artificial intelligence, remote sensing, and IoT technology to deliver solutions that are both powerful and practical for farmers of all sizes.</p>
+                    <div class="about-values">
+                        <div class="value">
+                            <i class="fas fa-leaf"></i>
+                            <h4>Sustainability</h4>
+                            <p>Promoting eco-friendly farming practices</p>
+                        </div>
+                        <div class="value">
+                            <i class="fas fa-lightbulb"></i>
+                            <h4>Innovation</h4>
+                            <p>Cutting-edge AI and sensor technology</p>
+                        </div>
+                        <div class="value">
+                            <i class="fas fa-users"></i>
+                            <h4>Partnership</h4>
+                            <p>Working closely with farming communities</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="about-image">
+                    <div class="about-visual">
+                        <i class="fas fa-tractor"></i>
+                        <div class="tech-overlay">
+                            <div class="tech-element">AI</div>
+                            <div class="tech-element">IoT</div>
+                            <div class="tech-element">ML</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Expertise Section -->
+    <section id="expertise" class="expertise">
+        <div class="container">
+            <h2>Our Expertise</h2>
+            <div class="expertise-grid">
+                <div class="expertise-item">
+                    <i class="fas fa-satellite"></i>
+                    <h3>Remote Sensing</h3>
+                    <p>Multispectral and hyperspectral imaging analysis for comprehensive crop monitoring</p>
+                </div>
+                <div class="expertise-item">
+                    <i class="fas fa-brain"></i>
+                    <h3>Machine Learning</h3>
+                    <p>Advanced AI algorithms for predictive analytics and pattern recognition</p>
+                </div>
+                <div class="expertise-item">
+                    <i class="fas fa-network-wired"></i>
+                    <h3>IoT Integration</h3>
+                    <p>Seamless sensor networks for real-time environmental monitoring</p>
+                </div>
+                <div class="expertise-item">
+                    <i class="fas fa-chart-line"></i>
+                    <h3>Data Analytics</h3>
+                    <p>Comprehensive data processing and visualization for actionable insights</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section id="contact" class="contact">
+        <div class="container">
+            <h2>Get in Touch</h2>
+            <div class="contact-content">
+                <div class="contact-info">
+                    <h3>Ready to Transform Your Farm?</h3>
+                    <p>Contact our team of experts to learn how Fasalytics can help optimize your agricultural operations with AI-powered insights.</p>
+                    <div class="contact-details">
+                        <div class="contact-item">
+                            <i class="fas fa-envelope"></i>
+                            <span>info@fasalytics.com</span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-phone"></i>
+                            <span>+1 (555) 123-4567</span>
+                        </div>
+                        <div class="contact-item">
+                            <i class="fas fa-map-marker-alt"></i>
+                            <span>Agricultural Innovation Center, Silicon Valley</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="contact-form">
+                    <form>
+                        <div class="form-group">
+                            <input type="text" placeholder="Your Name" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="email" placeholder="Your Email" required>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" placeholder="Farm Size (hectares)">
+                        </div>
+                        <div class="form-group">
+                            <textarea placeholder="Tell us about your farming needs..." rows="4"></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Send Message</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-content">
+                <div class="footer-section">
+                    <div class="footer-logo">
+                        <i class="fas fa-satellite"></i>
+                        <span>Fasalytics</span>
+                    </div>
+                    <p>Smart Farming for a Sustainable Future</p>
+                    <div class="social-links">
+                        <a href="#"><i class="fab fa-twitter"></i></a>
+                        <a href="#"><i class="fab fa-linkedin"></i></a>
+                        <a href="#"><i class="fab fa-facebook"></i></a>
+                        <a href="#"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Quick Links</h4>
+                    <ul>
+                        <li><a href="#home">Home</a></li>
+                        <li><a href="#reports">Reports</a></li>
+                        <li><a href="#about">About</a></li>
+                        <li><a href="#contact">Contact</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Dashboard</h4>
+                    <ul>
+                        <li><a href="#">Crop Health Analysis</a></li>
+                        <li><a href="#">Soil Condition</a></li>
+                        <li><a href="#">Pest Risk Prediction</a></li>
+                    </ul>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Services</h4>
+                    <ul>
+                        <li><a href="#expertise">Our Expertise</a></li>
+                        <li><a href="#locations">Where We Work</a></li>
+                        <li><a href="#process">How We Work</a></li>
+                    </ul>
+                </div>
+            </div>
+            
+            <div class="footer-bottom">
+                <p>&copy; 2025 Fasalytics. All rights reserved. | Privacy Policy | Terms of Service</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
