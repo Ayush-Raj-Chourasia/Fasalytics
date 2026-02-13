@@ -325,13 +325,9 @@
 
                     <div>
                         <strong style="color: #f57f17;">Recommended Actions:</strong>
-                        {% for rec in analysis.recommendation|split:" | " %}
-                            <div class="recommendation-item">
-                                {{ rec }}
-                            </div>
-                        {% empty %}
-                            <div class="recommendation-item">{{ analysis.recommendation }}</div>
-                        {% endfor %}
+                        <div class="recommendation-item">
+                            {{ analysis.recommendation }}
+                        </div>
                     </div>
                 </div>
 

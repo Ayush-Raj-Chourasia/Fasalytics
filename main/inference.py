@@ -36,22 +36,27 @@ class CropHealthPredictor:
             self.load_model()
     
     def load_model(self):
-        """Load trained PyTorch model"""
+        """Load trained PyTorch model from static folder"""
         if not TORCH_AVAILABLE:
-            print("⚠️ PyTorch not available - using dummy model for testing")
+            print("⚠️ PyTorch not available - using fallback predictions")
             self.model_loaded = False
             return
             
         try:
             model_path = os.path.join(settings.BASE_DIR, 'static', 'crop_health_model.pth')
-            scaler_path = os.path.join(settings.BASE_DIR, 'static', 'scaler.pkl')
+            
+            print(f"🔍 Looking for model at: {model_path}")
             
             # Try to load model
-            if os.path.exists(model_path) and TORCH_AVAILABLE:
+            if os.path.exists(model_path):
+                print(f"✅ Model file found! Loading...")
+                
+                # Load checkpoint
                 checkpoint = torch.load(model_path, map_location=self.device)
                 
-                # Handle both checkpoint and direct state_dict
+                # Extract model config and state
                 if isinstance(checkpoint, dict) and 'model_state_dict' in checkpoint:
+                    # Full checkpoint format (from Colab training)
                     model_config = checkpoint.get('model_config', {
                         'input_size': 208,
                         'sequence_length': 10,
@@ -59,7 +64,18 @@ class CropHealthPredictor:
                         'num_classes': 2
                     })
                     model_state = checkpoint['model_state_dict']
+                    training_metrics = checkpoint.get('training_metrics', {})
+                    accuracy = training_metrics.get('final_accuracy', 'N/A')
+                    if isinstance(accuracy, (int, float)):
+                        print(f"   ✅ Accuracy: {accuracy:.2f}%")
+                    else:
+                        print(f"   ✅ Accuracy: {accuracy}")
+                    if isinstance(accuracy, (int, float)):
+                        print(f"   ✅ Accuracy: {accuracy:.2f}%")
+                    else:
+                        print(f"   ✅ Accuracy: {accuracy}")
                 else:
+                    # Direct state dict
                     model_config = {
                         'input_size': 208,
                         'sequence_length': 10,
@@ -68,30 +84,34 @@ class CropHealthPredictor:
                     }
                     model_state = checkpoint
                 
-                # Initialize model
+                # Initialize model architecture
                 self.model = self._create_model(model_config)
                 self.model.load_state_dict(model_state)
                 self.model.to(self.device)
                 self.model.eval()
                 
-                print("✅ Model loaded successfully")
+                print("✅ Model loaded successfully!")
+                self.model_loaded = True
+                
+                # Print model info
+                total_params = sum(p.numel() for p in self.model.parameters())
+                print(f"   📊 Model parameters: {total_params:,}")
+                print(f"   🎯 Input features: {model_config.get('input_size', 208)}")
+                print(f"   📈 Output classes: {model_config.get('num_classes', 2)}")
+                
             else:
-                print(f"⚠️ Model file not found at {model_path if not TORCH_AVAILABLE else model_path}")
-                print("   Using dummy model for testing")
-                self.model = None
-            
-            # Try to load scaler
-            if os.path.exists(scaler_path) and joblib:
-                self.scaler = joblib.load(scaler_path)
-                print("✅ Scaler loaded successfully")
-            else:
-                print("⚠️ Scaler not found, will use default scaling")
-                self.scaler = None
-            
-            self.model_loaded = True
+                print(f"⚠️ Model file NOT found at: {model_path}")
+                print(f"   📝 To use the trained model:")
+                print(f"      1. Train model in Colab using COLAB_TRAINING_NOTEBOOK.py")
+                print(f"      2. Download crop_health_model.pth from Colab")
+                print(f"      3. Place at: {model_path}")
+                print(f"      4. Restart Django server")
+                print(f"   For now, using fallback predictions...")
+                self.model_loaded = False
             
         except Exception as e:
-            print(f"❌ Error loading model: {e}")
+            print(f"❌ Error loading model: {str(e)}")
+            print(f"   Using fallback predictions instead")
             self.model_loaded = False
     
     def _create_model(self, config):
