@@ -9,6 +9,18 @@ const client = axios.create({
   },
 })
 
+// Initialize CSRF token
+export const initializeCSRF = async () => {
+  try {
+    const response = await client.get('/api/csrf-token/')
+    if (response.data.csrfToken) {
+      client.defaults.headers.common['X-CSRFToken'] = response.data.csrfToken
+    }
+  } catch (error) {
+    console.error('Failed to get CSRF token:', error)
+  }
+}
+
 // Add CSRF token to requests if needed
 client.interceptors.request.use((config) => {
   const csrfToken = document.cookie

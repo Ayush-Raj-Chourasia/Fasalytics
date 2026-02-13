@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useEffect } from 'react'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import Navigation from './components/Navigation'
 import Footer from './components/Footer'
@@ -7,9 +7,15 @@ import Dashboard from './pages/Dashboard'
 import Analyze from './pages/Analyze'
 import History from './pages/History'
 import Results from './pages/Results'
+import { initializeCSRF } from './api/client'
 import './styles/app.css'
 
 function App() {
+  useEffect(() => {
+    // Initialize CSRF token when app loads
+    initializeCSRF()
+  }, [])
+
   return (
     <BrowserRouter>
       <div className="app-container">

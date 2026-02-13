@@ -1,7 +1,7 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.http import JsonResponse, HttpResponse
 from django.views.decorators.http import require_POST, require_http_methods
-from django.views.decorators.csrf import csrf_protect
+from django.views.decorators.csrf import csrf_protect, ensure_csrf_cookie, csrf_exempt
 from django.contrib.auth.decorators import login_required
 from django.core.paginator import Paginator
 from .models import ContactMessage, CropAnalysis
@@ -16,9 +16,20 @@ import os
 # API ENDPOINTS FOR REACT FRONTEND
 # ==========================================
 
-@require_http_methods(["POST"])
+@require_http_methods(["GET"])
+@ensure_csrf_cookie
+def get_csrf_token(request):
+    """Get CSRF token for React frontend"""
+    from django.middleware.csrf import get_token
+    csrf_token = get_token(request)
+    return JsonResponse({'csrfToken': csrf_token})
+
+@require_http_methods(["POST", "OPTIONS"])
+@csrf_protect
 def analyze_crop_api(request):
     """Handle crop health analysis - API endpoint for React"""
+    if request.method == 'OPTIONS':
+        return JsonResponse({'status': 'ok'}, status=200)
     try:
         # Check if it's a POST request with files (image upload)
         if request.FILES.get('crop_image'):
@@ -109,8 +120,8 @@ def crop_results_api(request, pk):
             'id': analysis.id,
             'prediction_status': analysis.prediction_status,
             'confidence': analysis.confidence,
-            'crop_type': analysis.crop_type or 'Unknown',
-            'field_name': analysis.field_name or 'Field',
+            'farm_name': analysis.farm_name or 'Unknown Farm',
+            'farmer_name': analysis.farmer_name or 'Anonymous',
             'recommendation': analysis.recommendation,
             'stress_reason': analysis.stress_reason,
             'timestamp': analysis.created_at.isoformat(),
@@ -147,8 +158,8 @@ def analysis_history_api(request):
                 'id': analysis.id,
                 'prediction_status': analysis.prediction_status,
                 'confidence': analysis.confidence,
-                'crop_type': analysis.crop_type or 'Unknown Crop',
-                'field_name': analysis.field_name or 'Field Analysis',
+                'farm_name': analysis.farm_name or 'Farm',
+                'farmer_name': analysis.farmer_name or 'Farmer',
                 'timestamp': analysis.created_at.isoformat(),
             })
         

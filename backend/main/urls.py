@@ -6,6 +6,9 @@ urlpatterns = [
     path('', views.index, name='home'),
     path('home/', views.home, name='home_page'),
     
+    # CSRF Token endpoint
+    path('api/csrf-token/', views.get_csrf_token, name='get_csrf_token'),
+    
     # API Endpoints for React Frontend
     path('api/analyze/', views.analyze_crop_api, name='analyze_crop_api'),
     path('api/results/<int:pk>/', views.crop_results_api, name='crop_results_api'),
