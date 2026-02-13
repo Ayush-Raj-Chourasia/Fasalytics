@@ -1,0 +1,199 @@
+.history {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 2rem 1.5rem;
+}
+
+.history-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.history-header h1 {
+  font-size: 2rem;
+  margin-bottom: 0.5rem;
+}
+
+.history-header p {
+  color: var(--light-text);
+}
+
+.history-controls {
+  margin-bottom: 2rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+}
+
+.sort-select {
+  padding: 0.75rem 1rem;
+  border: 2px solid var(--border-light);
+  border-radius: 8px;
+  font-size: 1rem;
+  cursor: pointer;
+  background: var(--white);
+}
+
+.sort-select:focus {
+  outline: none;
+  border-color: var(--primary-green);
+}
+
+/* Empty State */
+.empty-state {
+  text-align: center;
+  padding: 4rem 2rem;
+  background: var(--white);
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+}
+
+.empty-state svg {
+  color: var(--light-text);
+  margin-bottom: 1rem;
+}
+
+.empty-state h2 {
+  margin-bottom: 0.5rem;
+}
+
+.empty-state p {
+  color: var(--light-text);
+  margin-bottom: 1.5rem;
+}
+
+/* Analyses List */
+.analyses-list {
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 1.5rem;
+}
+
+.analysis-card {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 1.5rem;
+  align-items: center;
+  background: var(--white);
+  padding: 1.5rem;
+  border-radius: 12px;
+  box-shadow: var(--shadow-md);
+  text-decoration: none;
+  color: inherit;
+  transition: all var(--transition-normal);
+  border-left: 4px solid transparent;
+}
+
+.analysis-card:hover {
+  transform: translateX(5px);
+  box-shadow: var(--shadow-lg);
+}
+
+.analysis-card.healthy {
+  border-left-color: var(--success-green);
+}
+
+.analysis-card.stressed {
+  border-left-color: var(--stress-red);
+}
+
+.analysis-status {
+  display: flex;
+  justify-content: center;
+}
+
+.status-badge {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--white);
+}
+
+.status-badge.healthy {
+  background: linear-gradient(135deg, var(--success-green), #059669);
+}
+
+.status-badge.stressed {
+  background: linear-gradient(135deg, var(--stress-red), #dc2626);
+}
+
+.analysis-details {
+  display: flex;
+  flex-direction: column;
+  gap: 0.75rem;
+}
+
+.analysis-main h3 {
+  margin: 0;
+  font-size: 1.25rem;
+}
+
+.field-name {
+  color: var(--light-text);
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+.analysis-meta {
+  display: flex;
+  gap: 1rem;
+  align-items: center;
+}
+
+.meta-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  color: var(--light-text);
+  font-size: 0.875rem;
+}
+
+.confidence-badge {
+  background: var(--light-bg);
+  padding: 0.25rem 0.75rem;
+  border-radius: 20px;
+  color: var(--primary-green);
+  font-weight: 600;
+}
+
+.analysis-status-text {
+  text-align: right;
+  font-weight: 700;
+  font-size: 1rem;
+}
+
+.analysis-card:has(.status-badge.healthy) .analysis-status-text {
+  color: var(--success-green);
+}
+
+.analysis-card:has(.status-badge.stressed) .analysis-status-text {
+  color: var(--stress-red);
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+  .history {
+    padding: 1rem;
+  }
+
+  .analysis-card {
+    grid-template-columns: 1fr;
+    gap: 1rem;
+  }
+
+  .analysis-status {
+    justify-content: flex-start;
+  }
+
+  .analysis-meta {
+    flex-wrap: wrap;
+  }
+
+  .analysis-status-text {
+    text-align: left;
+  }
+}

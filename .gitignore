@@ -159,3 +159,4 @@ dmypy.json
 _pycache/
 *.pickle
 *.pkl
+docs
