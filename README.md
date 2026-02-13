@@ -413,9 +413,3 @@ python manage.py runserver
 
 ---
 
-## 👩‍💻 Author
-
-**Ummatul Ayesha**
-B.Tech CSE (Cybersecurity) | AI & Full-Stack Enthusiast
-
----
