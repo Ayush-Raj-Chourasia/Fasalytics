@@ -160,3 +160,5 @@ _pycache/
 *.pickle
 *.pkl
 docs
+*.md
+!README.md
