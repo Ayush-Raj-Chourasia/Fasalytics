@@ -25,7 +25,7 @@ def get_csrf_token(request):
     return JsonResponse({'csrfToken': csrf_token})
 
 @require_http_methods(["POST", "OPTIONS"])
-@csrf_protect
+@csrf_exempt
 def analyze_crop_api(request):
     """Handle crop health analysis - API endpoint for React"""
     if request.method == 'OPTIONS':
@@ -66,6 +66,11 @@ def analyze_crop_api(request):
             humidity=float(data['humidity']),
             leaf_wetness=float(data.get('leaf_wetness', 0)),
             ph_level=float(data['ph_level']),
+            prediction_status='unknown',  # Default status
+            confidence=0.0,  # Will be updated by prediction
+            recommendation='Processing...',
+            stress_reason='',
+            zone_map=[]
         )
         
         # Run AI prediction
@@ -313,7 +318,7 @@ def export_analysis_pdf(request, pk):
         return JsonResponse({'success': False, 'message': 'Analysis not found'}, status=404)
 
 @require_POST
-@csrf_protect
+@csrf_exempt
 def contact_submit_api(request):
     """Handle contact form submission - API endpoint for React"""
     try:
