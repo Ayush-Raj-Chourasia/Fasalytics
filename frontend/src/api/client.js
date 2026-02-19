@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8000'
+const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || ''
 
 const client = axios.create({
   baseURL: API_BASE_URL,
@@ -9,8 +9,9 @@ const client = axios.create({
   },
 })
 
-// Initialize CSRF token
+// Initialize CSRF token — only when a backend URL is configured
 export const initializeCSRF = async () => {
+  if (!API_BASE_URL) return
   try {
     const response = await client.get('/api/csrf-token/')
     if (response.data.csrfToken) {
