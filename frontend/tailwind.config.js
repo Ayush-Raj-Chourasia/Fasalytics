@@ -5,31 +5,42 @@ export default {
     extend: {
       colors: {
         primary: {
+          DEFAULT: '#0fbd74',
           50: '#eaf9f0',
           100: '#c8f3db',
-          500: '#0fbf75',
-          600: '#0aa56f',
-          700: '#008f5a',
+          500: '#0fbd74',
+          600: '#0ca665',
+          700: '#0a8a54',
         },
         accent: '#00D28A',
-        neutral: {
-          900: '#0F1724',
-        }
+        'background-light': '#f6f8f7',
+        'background-dark': '#10221a',
+        'surface-dark': '#152e24',
+        'surface-dark-lighter': '#1c3b2f',
+        'surface-darker': '#0c1b14',
+        'neutral-dark': '#8faeb0',
+        danger: '#ef4444',
+        warning: '#f59e0b',
+        'alert-red': '#ef4444',
+        'alert-bg': 'rgba(239, 68, 68, 0.1)',
       },
       backgroundImage: {
-        'gradient-primary': 'linear-gradient(90deg,#0fbf75 0%, #0aa56f 50%, #008f5a 100%)',
+        'gradient-primary': 'linear-gradient(90deg,#0fbd74 0%, #0ca665 50%, #0a8a54 100%)',
       },
       boxShadow: {
         soft: '0 6px 20px rgba(2,6,23,0.12)',
         elevated: '0 24px 60px rgba(2,6,23,0.18)',
       },
       borderRadius: {
+        DEFAULT: '0.5rem',
         sm: '6px',
         md: '12px',
-        lg: '20px',
+        lg: '1rem',
+        xl: '1.5rem',
       },
       fontFamily: {
-        sans: ['Inter', 'Poppins', 'sans-serif'],
+        sans: ['Inter', 'sans-serif'],
+        display: ['Inter', 'sans-serif'],
       },
       animation: {
         'fade-in': 'fadeIn 0.42s cubic-bezier(.22,.9,.13,1)',
