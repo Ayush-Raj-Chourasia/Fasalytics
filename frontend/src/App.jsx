@@ -13,47 +13,48 @@ import './styles/app.css'
 
 function AppContent() {
   const location = useLocation()
-  
+  const isHome = location.pathname === '/'
+
   useEffect(() => {
-    // Scroll to top on route change
     window.scrollTo(0, 0)
   }, [location.pathname])
 
   return (
-    <AnimatePresence mode="wait">
-      <motion.div
-        key={location.pathname}
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        exit={{ opacity: 0 }}
-        transition={{ duration: 0.3 }}
-      >
-        <Routes location={location}>
-          <Route path="/" element={<Home />} />
-          <Route path="/dashboard" element={<Dashboard />} />
-          <Route path="/analyze" element={<Analyze />} />
-          <Route path="/history" element={<History />} />
-          <Route path="/results/:id" element={<Results />} />
-        </Routes>
-      </motion.div>
-    </AnimatePresence>
+    <>
+      {isHome && <Navigation />}
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={location.pathname}
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          exit={{ opacity: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <Routes location={location}>
+            <Route path="/" element={<Home />} />
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/analyze" element={<Analyze />} />
+            <Route path="/history" element={<History />} />
+            <Route path="/results/:id" element={<Results />} />
+          </Routes>
+        </motion.div>
+      </AnimatePresence>
+      {isHome && <Footer />}
+    </>
   )
 }
 
 function App() {
   useEffect(() => {
-    // Initialize CSRF token when app loads
     initializeCSRF()
   }, [])
 
   return (
     <BrowserRouter>
-      <div className="bg-[#0F1724] min-h-screen flex flex-col">
-        <Navigation />
+      <div className="bg-[#10221a] min-h-screen flex flex-col">
         <main className="flex-1 w-full">
           <AppContent />
         </main>
-        <Footer />
       </div>
     </BrowserRouter>
   )
