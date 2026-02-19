@@ -25,7 +25,7 @@ function Home() {
   ]
 
   return (
-    <div style={{ width: '100%', background: '#10221a', overflow: 'hidden' }}>
+    <div style={{ width: '100%', background: '#07281b', overflow: 'hidden' }}>
       {/* ===== HERO ===== */}
       <section className="hero">
         <div className="hero-glow-1" />
