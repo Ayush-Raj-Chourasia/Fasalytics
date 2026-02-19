@@ -53,7 +53,7 @@ function Dashboard() {
   ]
 
   const pieData = [
-    { name: 'Healthy', value: data.healthy_count, fill: '#0fbd74' },
+    { name: 'Healthy', value: data.healthy_count, fill: '#00ff4c' },
     { name: 'High Stress', value: Math.round(data.stressed_count * 0.74), fill: '#ef4444' },
     { name: 'Moderate Stress', value: Math.round(data.stressed_count * 0.26), fill: '#f59e0b' },
   ]
@@ -67,8 +67,8 @@ function Dashboard() {
 
   const statusBadge = (status) => {
     if (status === 'healthy') return (
-      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-[#0fbd74]/10 text-[#0fbd74] border border-[#0fbd74]/20">
-        <span className="w-1.5 h-1.5 rounded-full bg-[#0fbd74]" /> Healthy
+      <span className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium bg-[#00ff4c]/10 text-[#00ff4c] border border-[#00ff4c]/20">
+        <span className="w-1.5 h-1.5 rounded-full bg-[#00ff4c]" /> Healthy
       </span>
     )
     if (status === 'stressed') return (
@@ -84,44 +84,44 @@ function Dashboard() {
   }
 
   return (
-    <div className="flex h-screen bg-[#10221a] overflow-hidden">
+    <div className="flex h-screen bg-[#07281b] overflow-hidden">
       {/* Sidebar */}
-      <aside className="w-64 h-full bg-[#152e24] border-r border-[#0fbd74]/10 flex-col hidden md:flex">
-        <div className="h-16 flex items-center px-6 border-b border-[#0fbd74]/10">
+      <aside className="w-64 h-full bg-[#0d3b2c] border-r border-[#00ff4c]/10 flex-col hidden md:flex">
+        <div className="h-16 flex items-center px-6 border-b border-[#00ff4c]/10">
           <div className="flex items-center gap-2">
-            <div className="w-8 h-8 rounded bg-gradient-to-br from-[#0fbd74] to-emerald-700 flex items-center justify-center text-white font-bold text-xl">F</div>
+            <div className="w-8 h-8 rounded bg-gradient-to-br from-[#00ff4c] to-emerald-700 flex items-center justify-center text-white font-bold text-xl">F</div>
             <span className="text-lg font-bold tracking-tight text-white">Fasalytics</span>
           </div>
         </div>
 
         <nav className="flex-1 py-6 px-3 space-y-1 overflow-y-auto">
           <p className="px-3 text-xs font-semibold text-[#8faeb0] uppercase tracking-wider mb-2">Main</p>
-          <button onClick={() => navigate('/dashboard')} className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-[#0fbd74]/10 text-[#0fbd74] font-medium w-full text-left">
+          <button onClick={() => navigate('/dashboard')} className="flex items-center gap-3 px-3 py-2.5 rounded-lg bg-[#00ff4c]/10 text-[#00ff4c] font-medium w-full text-left">
             <span className="material-icons-round text-xl">dashboard</span> Dashboard
           </button>
-          <button onClick={() => navigate('/analyze')} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-[#0fbd74]/5 hover:text-white transition-colors w-full text-left">
+          <button onClick={() => navigate('/analyze')} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-[#00ff4c]/5 hover:text-white transition-colors w-full text-left">
             <span className="material-icons-round text-xl">agriculture</span> Analyze
           </button>
-          <button onClick={() => navigate('/history')} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-[#0fbd74]/5 hover:text-white transition-colors w-full text-left">
+          <button onClick={() => navigate('/history')} className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-[#00ff4c]/5 hover:text-white transition-colors w-full text-left">
             <span className="material-icons-round text-xl">analytics</span> History
           </button>
-          <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-[#0fbd74]/5 hover:text-white transition-colors w-full text-left">
+          <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-[#00ff4c]/5 hover:text-white transition-colors w-full text-left">
             <span className="material-icons-round text-xl">notifications</span> Alerts
-            <span className="ml-auto bg-[#0fbd74] text-white text-xs font-bold px-2 py-0.5 rounded-full">3</span>
+            <span className="ml-auto bg-[#00ff4c] text-white text-xs font-bold px-2 py-0.5 rounded-full">3</span>
           </button>
 
           <p className="px-3 text-xs font-semibold text-[#8faeb0] uppercase tracking-wider mt-6 mb-2">System</p>
-          <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-[#0fbd74]/5 hover:text-white transition-colors w-full text-left">
+          <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-[#00ff4c]/5 hover:text-white transition-colors w-full text-left">
             <span className="material-icons-round text-xl">settings</span> Settings
           </button>
-          <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-[#0fbd74]/5 hover:text-white transition-colors w-full text-left">
+          <button className="flex items-center gap-3 px-3 py-2.5 rounded-lg text-gray-400 hover:bg-[#00ff4c]/5 hover:text-white transition-colors w-full text-left">
             <span className="material-icons-round text-xl">help_outline</span> Support
           </button>
         </nav>
 
-        <div className="p-4 border-t border-[#0fbd74]/10">
-          <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#0fbd74]/5 transition-colors cursor-pointer">
-            <div className="w-10 h-10 rounded-full bg-[#1c3b2f] flex items-center justify-center text-[#0fbd74] font-bold">A</div>
+        <div className="p-4 border-t border-[#00ff4c]/10">
+          <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-[#00ff4c]/5 transition-colors cursor-pointer">
+            <div className="w-10 h-10 rounded-full bg-[#0a2f22] flex items-center justify-center text-[#00ff4c] font-bold">A</div>
             <div className="flex-1 min-w-0">
               <p className="text-sm font-medium text-white truncate">Dr. A. Sharma</p>
               <p className="text-xs text-[#8faeb0] truncate">Senior Agronomist</p>
@@ -134,13 +134,13 @@ function Dashboard() {
       {/* Main Content */}
       <main className="flex-1 h-full overflow-y-auto overflow-x-hidden">
         {/* Header */}
-        <header className="sticky top-0 z-10 bg-[#10221a]/80 backdrop-blur-md px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-[#0fbd74]/10">
+        <header className="sticky top-0 z-10 bg-[#07281b]/80 backdrop-blur-md px-6 py-4 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-[#00ff4c]/10">
           <div>
             <h1 className="text-2xl font-bold text-white">Overview</h1>
             <p className="text-sm text-[#8faeb0]">Welcome back, here's today's crop health analysis.</p>
           </div>
           <div className="flex items-center gap-3">
-            <div className="hidden sm:flex items-center bg-[#152e24] px-3 py-2 rounded-lg border border-[#0fbd74]/20">
+            <div className="hidden sm:flex items-center bg-[#0d3b2c] px-3 py-2 rounded-lg border border-[#00ff4c]/20">
               <span className="material-icons-round text-gray-400 text-sm mr-2">calendar_today</span>
               <select
                 value={timeRange}
@@ -154,7 +154,7 @@ function Dashboard() {
             </div>
             <button
               onClick={() => navigate('/analyze')}
-              className="bg-[#0fbd74] hover:bg-[#0ca665] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-lg shadow-[#0fbd74]/20 transition-all flex items-center gap-2"
+              className="bg-[#00ff4c] hover:bg-[#00cc3e] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-lg shadow-[#00ff4c]/20 transition-all flex items-center gap-2"
             >
               <span className="material-icons-round text-sm">add</span> New Analysis
             </button>
@@ -170,19 +170,19 @@ function Dashboard() {
                 initial={{ opacity: 0, y: 20 }}
                 animate={{ opacity: 1, y: 0 }}
                 transition={{ delay: i * 0.1 }}
-                className={`glass-panel rounded-xl p-5 relative overflow-hidden transition-all duration-300 hover:border-[#0fbd74]/30 ${kpi.border ? 'border-l-4 border-l-red-500' : ''}`}
+                className={`glass-panel rounded-xl p-5 relative overflow-hidden transition-all duration-300 hover:border-[#00ff4c]/30 ${kpi.border ? 'border-l-4 border-l-red-500' : ''}`}
               >
                 <div className="flex justify-between items-start mb-4">
                   <div>
                     <p className="text-sm font-medium text-[#8faeb0]">{kpi.label}</p>
                     <h3 className="text-3xl font-bold text-white mt-1">{kpi.value}</h3>
                   </div>
-                  <div className={`p-2 rounded-lg ${kpi.color === 'danger' ? 'bg-red-500/20' : kpi.color === 'blue' ? 'bg-blue-500/20' : 'bg-[#0fbd74]/20'}`}>
-                    <span className={`material-icons-round ${kpi.color === 'danger' ? 'text-red-500' : kpi.color === 'blue' ? 'text-blue-400' : 'text-[#0fbd74]'}`}>{kpi.icon}</span>
+                  <div className={`p-2 rounded-lg ${kpi.color === 'danger' ? 'bg-red-500/20' : kpi.color === 'blue' ? 'bg-blue-500/20' : 'bg-[#00ff4c]/20'}`}>
+                    <span className={`material-icons-round ${kpi.color === 'danger' ? 'text-red-500' : kpi.color === 'blue' ? 'text-blue-400' : 'text-[#00ff4c]'}`}>{kpi.icon}</span>
                   </div>
                 </div>
                 <div className="flex items-center gap-2 text-sm">
-                  <span className={`flex items-center px-1.5 py-0.5 rounded text-xs font-semibold ${kpi.color === 'danger' ? 'text-red-500 bg-red-500/10' : kpi.trendUp ? 'text-[#0fbd74] bg-[#0fbd74]/10' : 'text-gray-400 bg-gray-500/10'}`}>
+                  <span className={`flex items-center px-1.5 py-0.5 rounded text-xs font-semibold ${kpi.color === 'danger' ? 'text-red-500 bg-red-500/10' : kpi.trendUp ? 'text-[#00ff4c] bg-[#00ff4c]/10' : 'text-gray-400 bg-gray-500/10'}`}>
                     <span className="material-icons-round text-xs mr-0.5">{kpi.trendUp ? 'trending_up' : 'remove'}</span> {kpi.trend}
                   </span>
                   <span className="text-[#8faeb0] text-xs">vs last week</span>
@@ -204,7 +204,7 @@ function Dashboard() {
                 <h2 className="text-lg font-bold text-white">Weekly Crop Health Trend</h2>
                 <div className="flex gap-4">
                   <div className="flex items-center gap-2">
-                    <span className="w-3 h-3 rounded-full bg-[#0fbd74]" />
+                    <span className="w-3 h-3 rounded-full bg-[#00ff4c]" />
                     <span className="text-xs text-[#8faeb0]">Healthy</span>
                   </div>
                   <div className="flex items-center gap-2">
@@ -219,10 +219,10 @@ function Dashboard() {
                   <XAxis dataKey="name" stroke="#8faeb0" fontSize={12} />
                   <YAxis stroke="#8faeb0" fontSize={12} />
                   <Tooltip
-                    contentStyle={{ backgroundColor: '#152e24', border: '1px solid rgba(15,189,116,0.2)', borderRadius: '8px', color: '#fff' }}
+                    contentStyle={{ backgroundColor: '#0d3b2c', border: '1px solid rgba(0,255,76,0.2)', borderRadius: '8px', color: '#fff' }}
                     labelStyle={{ color: '#fff' }}
                   />
-                  <Bar dataKey="healthy" fill="#0fbd74" radius={[4, 4, 0, 0]} />
+                  <Bar dataKey="healthy" fill="#00ff4c" radius={[4, 4, 0, 0]} />
                   <Bar dataKey="stressed" fill="#ef4444" radius={[4, 4, 0, 0]} />
                 </BarChart>
               </ResponsiveContainer>
@@ -288,7 +288,7 @@ function Dashboard() {
             <div className="overflow-x-auto">
               <table className="w-full text-left border-collapse">
                 <thead>
-                  <tr className="bg-[#1c3b2f]/50 border-b border-white/5 text-xs uppercase tracking-wider text-[#8faeb0] font-semibold">
+                  <tr className="bg-[#0a2f22]/50 border-b border-white/5 text-xs uppercase tracking-wider text-[#8faeb0] font-semibold">
                     <th className="px-6 py-4">Farm Name</th>
                     <th className="px-6 py-4">Analysis Date</th>
                     <th className="px-6 py-4">Crop Type</th>
@@ -314,18 +314,18 @@ function Dashboard() {
                         <div className="flex items-center gap-2">
                           <div className="w-16 h-1.5 bg-gray-700 rounded-full overflow-hidden">
                             <div
-                              className={`h-full rounded-full ${row.confidence >= 90 ? 'bg-[#0fbd74]' : 'bg-yellow-500'}`}
+                              className={`h-full rounded-full ${row.confidence >= 90 ? 'bg-[#00ff4c]' : 'bg-yellow-500'}`}
                               style={{ width: `${row.confidence}%` }}
                             />
                           </div>
-                          <span className={`text-xs font-bold ${row.confidence >= 90 ? 'text-[#0fbd74]' : 'text-yellow-500'}`}>{row.confidence}%</span>
+                          <span className={`text-xs font-bold ${row.confidence >= 90 ? 'text-[#00ff4c]' : 'text-yellow-500'}`}>{row.confidence}%</span>
                         </div>
                       </td>
                       <td className="px-6 py-4">{statusBadge(row.status)}</td>
                       <td className="px-6 py-4 text-right">
                         <button
                           onClick={() => navigate(`/results/${row.id}`)}
-                          className="text-sm text-[#0fbd74] hover:text-[#0ca665] font-medium"
+                          className="text-sm text-[#00ff4c] hover:text-[#00cc3e] font-medium"
                         >
                           View Report
                         </button>

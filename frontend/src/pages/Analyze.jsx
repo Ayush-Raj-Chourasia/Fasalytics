@@ -112,7 +112,7 @@ function Analyze() {
     { name: 'soil_moisture', label: 'Soil Moisture', unit: '%', icon: 'water_drop', min: 0, max: 100, optimal: '40-60%', step: 0.1, color: '#3b82f6' },
     { name: 'temperature', label: 'Temperature', unit: '°C', icon: 'thermostat', min: -50, max: 50, optimal: '20-25°C', step: 0.1, color: '#f59e0b' },
     { name: 'humidity', label: 'Humidity', unit: '%', icon: 'humidity_mid', min: 0, max: 100, optimal: '60-80%', step: 0.1, color: '#06b6d4' },
-    { name: 'leaf_wetness', label: 'Leaf Wetness', unit: '%', icon: 'eco', min: 0, max: 100, optimal: 'Low', step: 0.1, color: '#0fbd74' },
+    { name: 'leaf_wetness', label: 'Leaf Wetness', unit: '%', icon: 'eco', min: 0, max: 100, optimal: 'Low', step: 0.1, color: '#00ff4c' },
     { name: 'ph_level', label: 'pH Level', unit: '', icon: 'science', min: 0, max: 14, optimal: '6.0-7.0', step: 0.1, color: '#8b5cf6' },
   ]
 
@@ -124,13 +124,13 @@ function Analyze() {
   }
 
   return (
-    <div className="min-h-screen bg-[#10221a]">
+    <div className="min-h-screen bg-[#07281b]">
       {/* Top Bar */}
-      <header className="bg-[#10221a]/80 backdrop-blur-md border-b border-[#0fbd74]/10 px-6 py-4">
+      <header className="bg-[#07281b]/80 backdrop-blur-md border-b border-[#00ff4c]/10 px-6 py-4">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <div className="flex items-center gap-2 text-sm text-[#8faeb0] mb-1">
-              <button onClick={() => navigate('/dashboard')} className="hover:text-[#0fbd74] transition-colors">Dashboard</button>
+              <button onClick={() => navigate('/dashboard')} className="hover:text-[#00ff4c] transition-colors">Dashboard</button>
               <span className="material-icons-round text-xs">chevron_right</span>
               <span className="text-white">Analysis Hub</span>
             </div>
@@ -139,7 +139,7 @@ function Analyze() {
           <button
             onClick={(e) => analyzeMethod === 'sensor' ? handleSensorSubmit(e) : handleImageSubmit(e)}
             disabled={loading}
-            className="bg-[#0fbd74] hover:bg-[#0ca665] disabled:opacity-50 text-white px-5 py-2.5 rounded-lg text-sm font-medium shadow-lg shadow-[#0fbd74]/20 transition-all flex items-center gap-2"
+            className="bg-[#00ff4c] hover:bg-[#00cc3e] disabled:opacity-50 text-white px-5 py-2.5 rounded-lg text-sm font-medium shadow-lg shadow-[#00ff4c]/20 transition-all flex items-center gap-2"
           >
             <span className="material-icons-round text-sm">play_arrow</span>
             {loading ? 'Analyzing...' : 'Start New Analysis'}
@@ -151,9 +151,9 @@ function Analyze() {
       <AnimatePresence>
         {(error || success) && (
           <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="max-w-7xl mx-auto px-6 pt-4">
-            <div className={`p-4 rounded-xl flex items-start gap-3 ${error ? 'bg-red-500/10 border border-red-500/20' : 'bg-[#0fbd74]/10 border border-[#0fbd74]/20'}`}>
-              <span className={`material-icons-round text-lg ${error ? 'text-red-400' : 'text-[#0fbd74]'}`}>{error ? 'error_outline' : 'check_circle'}</span>
-              <p className={`text-sm ${error ? 'text-red-300' : 'text-[#0fbd74]'}`}>{error || success}</p>
+            <div className={`p-4 rounded-xl flex items-start gap-3 ${error ? 'bg-red-500/10 border border-red-500/20' : 'bg-[#00ff4c]/10 border border-[#00ff4c]/20'}`}>
+              <span className={`material-icons-round text-lg ${error ? 'text-red-400' : 'text-[#00ff4c]'}`}>{error ? 'error_outline' : 'check_circle'}</span>
+              <p className={`text-sm ${error ? 'text-red-300' : 'text-[#00ff4c]'}`}>{error || success}</p>
             </div>
           </motion.div>
         )}
@@ -164,13 +164,13 @@ function Analyze() {
         <div className="flex gap-2 mb-6">
           <button
             onClick={() => { setAnalyzeMethod('sensor'); setValidationErrors({}); setError(null) }}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${analyzeMethod === 'sensor' ? 'bg-[#0fbd74]/10 text-[#0fbd74] border border-[#0fbd74]/20' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${analyzeMethod === 'sensor' ? 'bg-[#00ff4c]/10 text-[#00ff4c] border border-[#00ff4c]/20' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
           >
             <span className="material-icons-round text-lg">sensors</span> Sensor Data
           </button>
           <button
             onClick={() => { setAnalyzeMethod('image'); setValidationErrors({}); setError(null) }}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${analyzeMethod === 'image' ? 'bg-[#0fbd74]/10 text-[#0fbd74] border border-[#0fbd74]/20' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${analyzeMethod === 'image' ? 'bg-[#00ff4c]/10 text-[#00ff4c] border border-[#00ff4c]/20' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
           >
             <span className="material-icons-round text-lg">image</span> Field Image
           </button>
@@ -182,8 +182,8 @@ function Analyze() {
             {analyzeMethod === 'sensor' ? (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-panel rounded-xl p-6">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2 bg-[#0fbd74]/20 rounded-lg">
-                    <span className="material-icons-round text-[#0fbd74]">sensors</span>
+                  <div className="p-2 bg-[#00ff4c]/20 rounded-lg">
+                    <span className="material-icons-round text-[#00ff4c]">sensors</span>
                   </div>
                   <div>
                     <h2 className="text-lg font-bold text-white">Sensor Input Panel</h2>
@@ -218,8 +218,8 @@ function Analyze() {
                             onChange={handleSensorChange}
                             placeholder={`${field.min}${field.unit} – ${field.max}${field.unit}`}
                             disabled={loading}
-                            className={`w-full px-4 py-3 rounded-lg border bg-[#0c1b14] text-white placeholder-gray-600 transition-all focus:ring-2 focus:outline-none disabled:opacity-50 ${
-                              validationErrors[field.name] ? 'border-red-500/50 focus:ring-red-500/30' : 'border-white/10 focus:border-[#0fbd74]/50 focus:ring-[#0fbd74]/20'
+                            className={`w-full px-4 py-3 rounded-lg border bg-[#071f15] text-white placeholder-gray-600 transition-all focus:ring-2 focus:outline-none disabled:opacity-50 ${
+                              validationErrors[field.name] ? 'border-red-500/50 focus:ring-red-500/30' : 'border-white/10 focus:border-[#00ff4c]/50 focus:ring-[#00ff4c]/20'
                             }`}
                           />
                           {field.unit && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#8faeb0]">{field.unit}</span>}
@@ -244,7 +244,7 @@ function Analyze() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full mt-4 bg-[#0fbd74] hover:bg-[#0ca665] disabled:opacity-50 text-white py-3 rounded-lg font-semibold shadow-lg shadow-[#0fbd74]/20 transition-all flex items-center justify-center gap-2"
+                    className="w-full mt-4 bg-[#00ff4c] hover:bg-[#00cc3e] disabled:opacity-50 text-white py-3 rounded-lg font-semibold shadow-lg shadow-[#00ff4c]/20 transition-all flex items-center justify-center gap-2"
                   >
                     {loading ? (
                       <>
@@ -276,7 +276,7 @@ function Analyze() {
                   <input type="file" id="image-input" accept="image/*" onChange={handleImageSelect} disabled={loading} className="hidden" />
                   <label
                     htmlFor="image-input"
-                    className="block border-2 border-dashed border-white/10 rounded-xl hover:border-[#0fbd74]/30 transition-all cursor-pointer group"
+                    className="block border-2 border-dashed border-white/10 rounded-xl hover:border-[#00ff4c]/30 transition-all cursor-pointer group"
                   >
                     {imagePreview ? (
                       <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="p-4 text-center">
@@ -285,8 +285,8 @@ function Analyze() {
                       </motion.div>
                     ) : (
                       <div className="text-center py-16">
-                        <div className="w-16 h-16 mx-auto rounded-full bg-[#0fbd74]/10 flex items-center justify-center mb-4 group-hover:bg-[#0fbd74]/20 transition-colors">
-                          <span className="material-icons-round text-3xl text-[#0fbd74]">cloud_upload</span>
+                        <div className="w-16 h-16 mx-auto rounded-full bg-[#00ff4c]/10 flex items-center justify-center mb-4 group-hover:bg-[#00ff4c]/20 transition-colors">
+                          <span className="material-icons-round text-3xl text-[#00ff4c]">cloud_upload</span>
                         </div>
                         <p className="text-white font-semibold mb-1">Drop your field image here</p>
                         <p className="text-sm text-[#8faeb0]">or click to browse • JPG, PNG, WebP</p>
@@ -297,7 +297,7 @@ function Analyze() {
                   <button
                     type="submit"
                     disabled={loading || !imageFile}
-                    className="w-full mt-6 bg-[#0fbd74] hover:bg-[#0ca665] disabled:opacity-50 text-white py-3 rounded-lg font-semibold shadow-lg shadow-[#0fbd74]/20 transition-all flex items-center justify-center gap-2"
+                    className="w-full mt-6 bg-[#00ff4c] hover:bg-[#00cc3e] disabled:opacity-50 text-white py-3 rounded-lg font-semibold shadow-lg shadow-[#00ff4c]/20 transition-all flex items-center justify-center gap-2"
                   >
                     {loading ? (
                       <>
@@ -319,7 +319,7 @@ function Analyze() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {[
                 { icon: 'schedule', title: 'Last Reading', value: '2 min ago', desc: 'Auto-sync active', color: 'text-blue-400', bg: 'bg-blue-500/20' },
-                { icon: 'trending_up', title: 'Trend', value: '+2.4%', desc: 'Improving vs last week', color: 'text-[#0fbd74]', bg: 'bg-[#0fbd74]/20' },
+                { icon: 'trending_up', title: 'Trend', value: '+2.4%', desc: 'Improving vs last week', color: 'text-[#00ff4c]', bg: 'bg-[#00ff4c]/20' },
                 { icon: 'psychology', title: 'AI Model', value: 'v3.2', desc: '96.4% accuracy', color: 'text-purple-400', bg: 'bg-purple-500/20' },
               ].map((card, i) => (
                 <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + i * 0.1 }} className="glass-panel rounded-xl p-4">
@@ -346,7 +346,7 @@ function Analyze() {
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-bold text-white">Live Results</h3>
                 <div className="flex items-center gap-1.5">
-                  <span className={`w-2 h-2 rounded-full ${liveResults ? 'bg-[#0fbd74] animate-pulse' : 'bg-gray-600'}`} />
+                  <span className={`w-2 h-2 rounded-full ${liveResults ? 'bg-[#00ff4c] animate-pulse' : 'bg-gray-600'}`} />
                   <span className="text-xs text-[#8faeb0]">{liveResults ? 'Active' : 'Waiting'}</span>
                 </div>
               </div>
@@ -357,8 +357,8 @@ function Analyze() {
                   <div className="text-center mb-6">
                     <div className="relative w-36 h-36 mx-auto mb-4">
                       <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
-                        <circle cx="60" cy="60" r="52" fill="none" stroke="#1c3b2f" strokeWidth="8" />
-                        <circle cx="60" cy="60" r="52" fill="none" stroke="#0fbd74" strokeWidth="8" strokeLinecap="round"
+                        <circle cx="60" cy="60" r="52" fill="none" stroke="#0a2f22" strokeWidth="8" />
+                        <circle cx="60" cy="60" r="52" fill="none" stroke="#00ff4c" strokeWidth="8" strokeLinecap="round"
                           strokeDasharray={`${liveResults.confidence * 3.267} 326.7`} />
                       </svg>
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -368,7 +368,7 @@ function Analyze() {
                     </div>
                     <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${
                       liveResults.health_status === 'Healthy'
-                        ? 'bg-[#0fbd74]/10 text-[#0fbd74] border border-[#0fbd74]/20'
+                        ? 'bg-[#00ff4c]/10 text-[#00ff4c] border border-[#00ff4c]/20'
                         : 'bg-red-500/10 text-red-500 border border-red-500/20'
                     }`}>
                       <span className="material-icons-round text-sm">{liveResults.health_status === 'Healthy' ? 'check_circle' : 'warning'}</span>
@@ -379,7 +379,7 @@ function Analyze() {
                   {/* AI Recommendations */}
                   <div className="border-t border-white/5 pt-5">
                     <h4 className="text-xs font-semibold text-[#8faeb0] uppercase tracking-wider mb-3 flex items-center gap-2">
-                      <span className="material-icons-round text-sm text-[#0fbd74]">auto_awesome</span>
+                      <span className="material-icons-round text-sm text-[#00ff4c]">auto_awesome</span>
                       AI Recommendations
                     </h4>
                     <div className="space-y-3">
@@ -389,9 +389,9 @@ function Analyze() {
                           initial={{ opacity: 0, x: -10 }}
                           animate={{ opacity: 1, x: 0 }}
                           transition={{ delay: i * 0.1 }}
-                          className="flex items-start gap-3 p-3 rounded-lg bg-[#0c1b14] border border-white/5"
+                          className="flex items-start gap-3 p-3 rounded-lg bg-[#071f15] border border-white/5"
                         >
-                          <span className="text-xs font-bold text-[#0fbd74] mt-0.5">{String(i + 1).padStart(2, '0')}</span>
+                          <span className="text-xs font-bold text-[#00ff4c] mt-0.5">{String(i + 1).padStart(2, '0')}</span>
                           <p className="text-sm text-gray-300">{rec}</p>
                         </motion.div>
                       ))}
@@ -400,7 +400,7 @@ function Analyze() {
                 </>
               ) : (
                 <div className="text-center py-10">
-                  <div className="w-16 h-16 mx-auto rounded-full bg-[#1c3b2f] flex items-center justify-center mb-4">
+                  <div className="w-16 h-16 mx-auto rounded-full bg-[#0a2f22] flex items-center justify-center mb-4">
                     <span className="material-icons-round text-3xl text-[#8faeb0]">pending</span>
                   </div>
                   <p className="text-[#8faeb0] text-sm mb-1">Awaiting sensor data</p>
@@ -414,12 +414,12 @@ function Analyze() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="rounded-xl p-5 bg-gradient-to-br from-[#0fbd74]/20 to-emerald-900/20 border border-[#0fbd74]/20"
+              className="rounded-xl p-5 bg-gradient-to-br from-[#00ff4c]/20 to-emerald-900/20 border border-[#00ff4c]/20"
             >
-              <span className="material-icons-round text-[#0fbd74] text-2xl mb-3 block">rocket_launch</span>
+              <span className="material-icons-round text-[#00ff4c] text-2xl mb-3 block">rocket_launch</span>
               <h4 className="text-white font-bold mb-1">Pro Tip</h4>
               <p className="text-sm text-[#8faeb0] mb-3">Enable automated sensor syncing for real-time monitoring with instant alerts.</p>
-              <button className="text-sm text-[#0fbd74] font-medium flex items-center gap-1 hover:gap-2 transition-all">
+              <button className="text-sm text-[#00ff4c] font-medium flex items-center gap-1 hover:gap-2 transition-all">
                 Learn more <span className="material-icons-round text-sm">arrow_forward</span>
               </button>
             </motion.div>

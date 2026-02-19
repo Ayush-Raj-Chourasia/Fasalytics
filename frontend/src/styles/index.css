@@ -73,7 +73,7 @@ body {
   background: rgba(7, 40, 27, 0.95);
   backdrop-filter: blur(20px);
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.04);
+  border-bottom: 1px solid rgba(0, 255, 76, 0.06);
 }
 
 .nav-inner {

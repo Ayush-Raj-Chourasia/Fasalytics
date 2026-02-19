@@ -74,22 +74,22 @@ function History() {
   const avgConfidence = (mockAnalyses.reduce((sum, a) => sum + a.confidence, 0) / mockAnalyses.length).toFixed(1)
 
   if (loading) return (
-    <div className="min-h-screen bg-[#10221a] flex items-center justify-center">
+    <div className="min-h-screen bg-[#07281b] flex items-center justify-center">
       <div className="flex flex-col items-center gap-3">
-        <div className="w-10 h-10 border-3 border-[#0fbd74]/30 border-t-[#0fbd74] rounded-full animate-spin" />
+        <div className="w-10 h-10 border-3 border-[#00ff4c]/30 border-t-[#00ff4c] rounded-full animate-spin" />
         <p className="text-[#8faeb0] text-sm">Loading history...</p>
       </div>
     </div>
   )
 
   return (
-    <div className="min-h-screen bg-[#10221a]">
+    <div className="min-h-screen bg-[#07281b]">
       {/* Top Bar */}
-      <header className="bg-[#10221a]/80 backdrop-blur-md border-b border-[#0fbd74]/10 px-6 py-4">
+      <header className="bg-[#07281b]/80 backdrop-blur-md border-b border-[#00ff4c]/10 px-6 py-4">
         <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
             <div className="flex items-center gap-2 text-sm text-[#8faeb0] mb-1">
-              <button onClick={() => navigate('/dashboard')} className="hover:text-[#0fbd74] transition-colors">Dashboard</button>
+              <button onClick={() => navigate('/dashboard')} className="hover:text-[#00ff4c] transition-colors">Dashboard</button>
               <span className="material-icons-round text-xs">chevron_right</span>
               <span className="text-white">Analysis Timeline</span>
             </div>
@@ -99,14 +99,14 @@ function History() {
             <select
               value={sortBy}
               onChange={(e) => setSortBy(e.target.value)}
-              className="bg-[#152e24] border border-[#0fbd74]/20 text-sm text-gray-200 px-3 py-2 rounded-lg focus:ring-0"
+              className="bg-[#0d3b2c] border border-[#00ff4c]/20 text-sm text-gray-200 px-3 py-2 rounded-lg focus:ring-0"
             >
               <option value="recent">Most Recent</option>
               <option value="confidence">Highest Confidence</option>
             </select>
             <button
               onClick={() => navigate('/analyze')}
-              className="bg-[#0fbd74] hover:bg-[#0ca665] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-lg shadow-[#0fbd74]/20 transition-all flex items-center gap-2"
+              className="bg-[#00ff4c] hover:bg-[#00cc3e] text-white px-4 py-2 rounded-lg text-sm font-medium shadow-lg shadow-[#00ff4c]/20 transition-all flex items-center gap-2"
             >
               <span className="material-icons-round text-sm">add</span> New Analysis
             </button>
@@ -121,7 +121,7 @@ function History() {
             <motion.div initial={{ opacity: 0, x: -20 }} animate={{ opacity: 1, x: 0 }} className="glass-panel rounded-xl p-5 lg:sticky lg:top-6">
               {/* Time Range */}
               <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-                <span className="material-icons-round text-lg text-[#0fbd74]">date_range</span>
+                <span className="material-icons-round text-lg text-[#00ff4c]">date_range</span>
                 Time Range
               </h3>
               <div className="space-y-2 mb-6">
@@ -137,7 +137,7 @@ function History() {
                       name="timeRange"
                       checked={timeRange === opt.value}
                       onChange={() => setTimeRange(opt.value)}
-                      className="w-4 h-4 accent-[#0fbd74]"
+                      className="w-4 h-4 accent-[#00ff4c]"
                     />
                     <span className="text-sm text-gray-300">{opt.label}</span>
                   </label>
@@ -146,7 +146,7 @@ function History() {
 
               {/* Status Filter */}
               <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-                <span className="material-icons-round text-lg text-[#0fbd74]">filter_list</span>
+                <span className="material-icons-round text-lg text-[#00ff4c]">filter_list</span>
                 Status
               </h3>
               <div className="flex gap-2 mb-6">
@@ -156,7 +156,7 @@ function History() {
                     onClick={() => setFilterStatus(s)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
                       filterStatus === s
-                        ? s === 'stressed' ? 'bg-red-500/20 text-red-400 border border-red-500/20' : 'bg-[#0fbd74]/20 text-[#0fbd74] border border-[#0fbd74]/20'
+                        ? s === 'stressed' ? 'bg-red-500/20 text-red-400 border border-red-500/20' : 'bg-[#00ff4c]/20 text-[#00ff4c] border border-[#00ff4c]/20'
                         : 'bg-white/5 text-gray-400 border border-white/5 hover:border-white/10'
                     }`}
                   >
@@ -167,7 +167,7 @@ function History() {
 
               {/* Crop Type Filter */}
               <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
-                <span className="material-icons-round text-lg text-[#0fbd74]">eco</span>
+                <span className="material-icons-round text-lg text-[#00ff4c]">eco</span>
                 Crop Type
               </h3>
               <div className="flex flex-wrap gap-2 mb-6">
@@ -176,7 +176,7 @@ function History() {
                     key={crop}
                     onClick={() => toggleCrop(crop)}
                     className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
-                      selectedCrops.includes(crop) ? 'bg-[#0fbd74]/20 text-[#0fbd74] border border-[#0fbd74]/20' : 'bg-white/5 text-gray-400 border border-white/5 hover:border-white/10'
+                      selectedCrops.includes(crop) ? 'bg-[#00ff4c]/20 text-[#00ff4c] border border-[#00ff4c]/20' : 'bg-white/5 text-gray-400 border border-white/5 hover:border-white/10'
                     }`}
                   >
                     {crop}
@@ -194,7 +194,7 @@ function History() {
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-[#8faeb0]">Healthy</span>
-                    <span className="font-bold text-[#0fbd74]">{totalHealthy}</span>
+                    <span className="font-bold text-[#00ff4c]">{totalHealthy}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-[#8faeb0]">Stressed</span>
@@ -213,14 +213,14 @@ function History() {
           <div className="lg:col-span-5 space-y-6">
             {sortedAnalyses.length === 0 ? (
               <motion.div initial={{ opacity: 0, scale: 0.95 }} animate={{ opacity: 1, scale: 1 }} className="glass-panel rounded-xl p-10 text-center">
-                <div className="w-16 h-16 mx-auto rounded-full bg-[#1c3b2f] flex items-center justify-center mb-4">
+                <div className="w-16 h-16 mx-auto rounded-full bg-[#0a2f22] flex items-center justify-center mb-4">
                   <span className="material-icons-round text-3xl text-[#8faeb0]">search_off</span>
                 </div>
                 <h2 className="text-xl font-bold text-white mb-2">No analyses found</h2>
                 <p className="text-[#8faeb0] text-sm mb-6">Try adjusting your filters or start a new analysis</p>
                 <button
                   onClick={() => navigate('/analyze')}
-                  className="bg-[#0fbd74] hover:bg-[#0ca665] text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-all"
+                  className="bg-[#00ff4c] hover:bg-[#00cc3e] text-white px-6 py-2.5 rounded-lg text-sm font-medium transition-all"
                 >
                   Start Analysis
                 </button>
@@ -229,13 +229,13 @@ function History() {
               Object.entries(groupedByDate).map(([dateLabel, items]) => (
                 <div key={dateLabel}>
                   <div className="flex items-center gap-3 mb-3">
-                    <span className="material-icons-round text-lg text-[#0fbd74]">calendar_today</span>
+                    <span className="material-icons-round text-lg text-[#00ff4c]">calendar_today</span>
                     <h3 className="text-sm font-bold text-white">{dateLabel}</h3>
                     <span className="text-xs text-[#8faeb0] bg-white/5 px-2 py-0.5 rounded-full">{items.length} {items.length === 1 ? 'analysis' : 'analyses'}</span>
                   </div>
                   <div className="space-y-3 relative">
                     {/* Timeline line */}
-                    <div className="absolute left-[19px] top-0 bottom-0 w-px bg-[#0fbd74]/10 hidden sm:block" />
+                    <div className="absolute left-[19px] top-0 bottom-0 w-px bg-[#00ff4c]/10 hidden sm:block" />
 
                     <AnimatePresence mode="popLayout">
                       {items.map((analysis, i) => {
@@ -249,23 +249,23 @@ function History() {
                             transition={{ delay: i * 0.05 }}
                             layout
                             onClick={() => navigate(`/results/${analysis.id}`)}
-                            className="glass-panel rounded-xl p-4 cursor-pointer hover:border-[#0fbd74]/30 transition-all group relative"
+                            className="glass-panel rounded-xl p-4 cursor-pointer hover:border-[#00ff4c]/30 transition-all group relative"
                           >
                             {/* Timeline dot */}
-                            <div className={`absolute left-4 top-6 w-3 h-3 rounded-full border-2 border-[#152e24] hidden sm:block ${isHealthy ? 'bg-[#0fbd74]' : 'bg-red-500'}`} />
+                            <div className={`absolute left-4 top-6 w-3 h-3 rounded-full border-2 border-[#0d3b2c] hidden sm:block ${isHealthy ? 'bg-[#00ff4c]' : 'bg-red-500'}`} />
 
                             <div className="sm:pl-8">
                               <div className="flex items-start justify-between gap-3 mb-3">
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2 mb-1">
-                                    <h4 className="text-sm font-bold text-white group-hover:text-[#0fbd74] transition-colors truncate">{analysis.crop_type} — {analysis.field_name}</h4>
+                                    <h4 className="text-sm font-bold text-white group-hover:text-[#00ff4c] transition-colors truncate">{analysis.crop_type} — {analysis.field_name}</h4>
                                   </div>
                                   <p className="text-xs text-[#8faeb0]">{formatTime(analysis.timestamp)}</p>
                                 </div>
                                 <span className={`flex-shrink-0 inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium ${
-                                  isHealthy ? 'bg-[#0fbd74]/10 text-[#0fbd74]' : 'bg-red-500/10 text-red-400'
+                                  isHealthy ? 'bg-[#00ff4c]/10 text-[#00ff4c]' : 'bg-red-500/10 text-red-400'
                                 }`}>
-                                  <span className={`w-1.5 h-1.5 rounded-full ${isHealthy ? 'bg-[#0fbd74]' : 'bg-red-500'}`} />
+                                  <span className={`w-1.5 h-1.5 rounded-full ${isHealthy ? 'bg-[#00ff4c]' : 'bg-red-500'}`} />
                                   {isHealthy ? 'Healthy' : 'Stressed'}
                                 </span>
                               </div>
@@ -273,7 +273,7 @@ function History() {
                               <div className="flex items-center justify-between">
                                 <div className="flex items-center gap-3">
                                   <div className="flex items-center gap-1.5">
-                                    <span className="material-icons-round text-sm text-[#0fbd74]">speed</span>
+                                    <span className="material-icons-round text-sm text-[#00ff4c]">speed</span>
                                     <span className="text-sm font-bold text-white">{analysis.confidence.toFixed(1)}%</span>
                                   </div>
                                 </div>
@@ -289,7 +289,7 @@ function History() {
                                       return (
                                         <div
                                           key={idx}
-                                          className={`w-1 rounded-t-sm ${isHealthy ? 'bg-[#0fbd74]' : 'bg-red-500'}`}
+                                          className={`w-1 rounded-t-sm ${isHealthy ? 'bg-[#00ff4c]' : 'bg-red-500'}`}
                                           style={{ height: `${Math.max(h, 10)}%` }}
                                         />
                                       )
@@ -297,7 +297,7 @@ function History() {
                                   </div>
                                 )}
 
-                                <span className="material-icons-round text-gray-600 text-lg group-hover:text-[#0fbd74] transition-colors">chevron_right</span>
+                                <span className="material-icons-round text-gray-600 text-lg group-hover:text-[#00ff4c] transition-colors">chevron_right</span>
                               </div>
                             </div>
                           </motion.div>
@@ -320,7 +320,7 @@ function History() {
               <div className="flex items-center justify-between mb-5">
                 <h3 className="text-lg font-bold text-white">Quick Analysis</h3>
                 <span className="flex items-center gap-1.5 text-xs text-[#8faeb0]">
-                  <span className="w-2 h-2 rounded-full bg-[#0fbd74] animate-pulse" /> Live
+                  <span className="w-2 h-2 rounded-full bg-[#00ff4c] animate-pulse" /> Live
                 </span>
               </div>
 
@@ -333,8 +333,8 @@ function History() {
                     <div className="mb-6 text-center">
                       <div className="relative w-28 h-28 mx-auto mb-3">
                         <svg className="w-full h-full -rotate-90" viewBox="0 0 100 100">
-                          <circle cx="50" cy="50" r="42" fill="none" stroke="#1c3b2f" strokeWidth="6" />
-                          <circle cx="50" cy="50" r="42" fill="none" stroke={latestHealthy ? '#0fbd74' : '#ef4444'} strokeWidth="6" strokeLinecap="round"
+                          <circle cx="50" cy="50" r="42" fill="none" stroke="#0a2f22" strokeWidth="6" />
+                          <circle cx="50" cy="50" r="42" fill="none" stroke={latestHealthy ? '#00ff4c' : '#ef4444'} strokeWidth="6" strokeLinecap="round"
                             strokeDasharray={`${latest.confidence * 2.639} 263.9`} />
                         </svg>
                         <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -377,7 +377,7 @@ function History() {
               {/* Recommended Actions */}
               <div className="border-t border-white/5 pt-5">
                 <h4 className="text-xs font-semibold text-[#8faeb0] uppercase tracking-wider mb-3 flex items-center gap-2">
-                  <span className="material-icons-round text-sm text-[#0fbd74]">auto_awesome</span>
+                  <span className="material-icons-round text-sm text-[#00ff4c]">auto_awesome</span>
                   Recommended Actions
                 </h4>
                 <div className="space-y-2">
@@ -387,9 +387,9 @@ function History() {
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.3 + i * 0.1 }}
-                      className="flex items-start gap-3 p-3 rounded-lg bg-[#0c1b14] border border-white/5"
+                      className="flex items-start gap-3 p-3 rounded-lg bg-[#071f15] border border-white/5"
                     >
-                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#0fbd74]/10 flex items-center justify-center text-xs font-bold text-[#0fbd74]">{i + 1}</span>
+                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-[#00ff4c]/10 flex items-center justify-center text-xs font-bold text-[#00ff4c]">{i + 1}</span>
                       <p className="text-xs text-gray-300">{action}</p>
                     </motion.div>
                   ))}
@@ -398,7 +398,7 @@ function History() {
 
               <button
                 onClick={() => navigate('/analyze')}
-                className="w-full mt-5 bg-[#0fbd74] hover:bg-[#0ca665] text-white py-2.5 rounded-lg text-sm font-medium shadow-lg shadow-[#0fbd74]/20 transition-all flex items-center justify-center gap-2"
+                className="w-full mt-5 bg-[#00ff4c] hover:bg-[#00cc3e] text-white py-2.5 rounded-lg text-sm font-medium shadow-lg shadow-[#00ff4c]/20 transition-all flex items-center justify-center gap-2"
               >
                 <span className="material-icons-round text-lg">play_arrow</span>
                 Run New Analysis

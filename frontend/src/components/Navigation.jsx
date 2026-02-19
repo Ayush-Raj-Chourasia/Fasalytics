@@ -18,9 +18,9 @@ function Navigation() {
 
   const navItems = [
     { path: '/', label: 'Home' },
-    { path: '/dashboard', label: 'Features' },
-    { path: '/analyze', label: 'Technology' },
-    { path: '/history', label: 'Pricing' },
+    { path: '/dashboard', label: 'Dashboard' },
+    { path: '/analyze', label: 'Analyze' },
+    { path: '/history', label: 'History' },
   ]
 
   return (
@@ -52,7 +52,7 @@ function Navigation() {
         </ul>
 
         <div className="nav-auth">
-          <Link to="/history" className="nav-login">Login</Link>
+          <Link to="/dashboard" className="nav-login">Login</Link>
           <button onClick={() => navigate('/analyze')} className="nav-cta">
             Get Started
           </button>
@@ -71,7 +71,7 @@ function Navigation() {
           </Link>
         ))}
         <div style={{ padding: '16px' }}>
-          <Link to="/history" onClick={() => setIsOpen(false)} className="nav-login" style={{ display: 'block', textAlign: 'center', marginBottom: '12px' }}>
+          <Link to="/dashboard" onClick={() => setIsOpen(false)} className="nav-login" style={{ display: 'block', textAlign: 'center', marginBottom: '12px' }}>
             Login
           </Link>
           <button onClick={() => { setIsOpen(false); navigate('/analyze'); }} className="nav-cta" style={{ width: '100%' }}>
