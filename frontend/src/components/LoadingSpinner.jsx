@@ -4,50 +4,62 @@ import { Leaf } from 'lucide-react'
 
 function LoadingSpinner() {
   return (
-    <div className="flex items-center justify-center min-h-screen bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-950">
-      <div className="flex flex-col items-center gap-6">
-        {/* Animated Spinner */}
+    <div style={{
+      display: 'flex', alignItems: 'center', justifyContent: 'center',
+      minHeight: '100vh', background: '#0F1724'
+    }}>
+      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '24px' }}>
+        {/* Spinner */}
         <motion.div
           animate={{ rotate: 360 }}
           transition={{ duration: 2, repeat: Infinity, ease: 'linear' }}
-          className="relative w-16 h-16"
+          style={{ position: 'relative', width: '64px', height: '64px' }}
         >
-          <div className="absolute inset-0 rounded-full border-4 border-gray-200 dark:border-gray-800" />
-          <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-[#0fbf75] border-r-[#0aa56f]" />
+          <div style={{
+            position: 'absolute', inset: 0, borderRadius: '50%',
+            border: '4px solid #1a2332'
+          }} />
+          <div style={{
+            position: 'absolute', inset: 0, borderRadius: '50%',
+            border: '4px solid transparent',
+            borderTopColor: '#0fbf75', borderRightColor: '#00D28A'
+          }} />
         </motion.div>
 
-        {/* Leaf Icon */}
+        {/* Leaf */}
         <motion.div
           animate={{ scale: [1, 1.1, 1] }}
           transition={{ duration: 2, repeat: Infinity }}
         >
-          <Leaf className="text-[#008f5a]" size={32} />
+          <Leaf style={{ color: '#0fbf75' }} size={32} />
         </motion.div>
 
-        {/* Loading Text */}
+        {/* Text */}
         <motion.div
           animate={{ opacity: [0.6, 1, 0.6] }}
           transition={{ duration: 1.5, repeat: Infinity }}
-          className="text-center"
+          style={{ textAlign: 'center' }}
         >
-          <p className="text-lg font-semibold text-gray-900 dark:text-white">
-            Loading
-          </p>
-          <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
+          <p style={{ fontSize: '18px', fontWeight: 600, color: '#ffffff' }}>Loading</p>
+          <p style={{ fontSize: '14px', color: '#9ca3af', marginTop: '8px' }}>
             Analyzing your crop health...
           </p>
         </motion.div>
 
-        {/* Progress Indicator */}
-        <motion.div
-          className="h-1 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden w-32"
-        >
+        {/* Progress */}
+        <div style={{
+          height: '4px', background: '#1a2332', borderRadius: '9999px',
+          overflow: 'hidden', width: '128px'
+        }}>
           <motion.div
             animate={{ x: [-128, 128] }}
             transition={{ duration: 1.5, repeat: Infinity }}
-            className="h-full w-16 bg-gradient-to-r from-[#0fbf75] to-[#008f5a] rounded-full"
+            style={{
+              height: '100%', width: '64px', borderRadius: '9999px',
+              background: 'linear-gradient(90deg, #0fbf75, #00D28A)'
+            }}
           />
-        </motion.div>
+        </div>
       </div>
     </div>
   )

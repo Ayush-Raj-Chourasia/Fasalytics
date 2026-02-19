@@ -31,8 +31,8 @@ function Dashboard() {
   }
 
   if (error) return (
-    <div className="p-6 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-300 rounded-lg">
-      <AlertCircle className="inline mr-2" />
+    <div className="alert-error" style={{ margin: '96px 24px 0', maxWidth: '1280px' }}>
+      <AlertCircle size={20} style={{ flexShrink: 0 }} />
       {error}
     </div>
   )
@@ -53,7 +53,7 @@ function Dashboard() {
   }
 
   const healthStatus = [
-    { name: 'Healthy', value: mockData.healthy_count, fill: '#10b981' },
+    { name: 'Healthy', value: mockData.healthy_count, fill: '#0fbf75' },
     { name: 'Stressed', value: mockData.stressed_count, fill: '#ef4444' }
   ]
 
