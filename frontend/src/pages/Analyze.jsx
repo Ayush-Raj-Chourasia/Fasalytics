@@ -3,6 +3,8 @@ import { useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import { api } from '../api/client'
 
+const cropTypes = ['Wheat', 'Corn', 'Soybean', 'Rice', 'Cotton', 'Barley', 'Other']
+
 function Analyze() {
   const navigate = useNavigate()
   const [analyzeMethod, setAnalyzeMethod] = useState('sensor')
@@ -10,6 +12,10 @@ function Analyze() {
   const [error, setError] = useState(null)
   const [success, setSuccess] = useState(null)
   const [validationErrors, setValidationErrors] = useState({})
+
+  // Farm details
+  const [farmName, setFarmName] = useState('')
+  const [cropType, setCropType] = useState('')
 
   const [sensorData, setSensorData] = useState({
     soil_moisture: '',
@@ -43,8 +49,15 @@ function Analyze() {
     }
   }
 
-  const validateSensorData = () => {
+  const validateCommonFields = () => {
     const newErrors = {}
+    if (!farmName.trim()) newErrors.farm_name = 'Farm name is required'
+    if (!cropType) newErrors.crop_type = 'Please select a crop type'
+    return newErrors
+  }
+
+  const validateSensorData = () => {
+    const newErrors = validateCommonFields()
     const values = sensorData
 
     if (values.soil_moisture === '') newErrors.soil_moisture = 'Required'
@@ -70,6 +83,8 @@ function Analyze() {
     setLoading(true)
     try {
       const response = await api.analyzeFromSensorData({
+        farm_name: farmName.trim(),
+        crop_type: cropType,
         soil_moisture: parseFloat(sensorData.soil_moisture),
         temperature: parseFloat(sensorData.temperature),
         humidity: parseFloat(sensorData.humidity),
@@ -87,11 +102,19 @@ function Analyze() {
 
   const handleImageSubmit = async (e) => {
     e.preventDefault()
-    if (!imageFile) { setError('Please select an image to analyze'); return }
+    const commonErrors = validateCommonFields()
+    if (!imageFile) commonErrors.image = 'Please select an image to analyze'
+    if (Object.keys(commonErrors).length > 0) {
+      setValidationErrors(commonErrors)
+      if (commonErrors.image) setError(commonErrors.image)
+      return
+    }
 
     setLoading(true)
     const formData = new FormData()
     formData.append('crop_image', imageFile)
+    formData.append('farm_name', farmName.trim())
+    formData.append('crop_type', cropType)
 
     try {
       const response = await api.analyzeFromImage(formData)
@@ -112,7 +135,7 @@ function Analyze() {
     { name: 'soil_moisture', label: 'Soil Moisture', unit: '%', icon: 'water_drop', min: 0, max: 100, optimal: '40-60%', step: 0.1, color: '#3b82f6' },
     { name: 'temperature', label: 'Temperature', unit: '°C', icon: 'thermostat', min: -50, max: 50, optimal: '20-25°C', step: 0.1, color: '#f59e0b' },
     { name: 'humidity', label: 'Humidity', unit: '%', icon: 'humidity_mid', min: 0, max: 100, optimal: '60-80%', step: 0.1, color: '#06b6d4' },
-    { name: 'leaf_wetness', label: 'Leaf Wetness', unit: '%', icon: 'eco', min: 0, max: 100, optimal: 'Low', step: 0.1, color: '#00ff4c' },
+    { name: 'leaf_wetness', label: 'Leaf Wetness', unit: '%', icon: 'eco', min: 0, max: 100, optimal: 'Low', step: 0.1, color: '#10b981' },
     { name: 'ph_level', label: 'pH Level', unit: '', icon: 'science', min: 0, max: 14, optimal: '6.0-7.0', step: 0.1, color: '#8b5cf6' },
   ]
 
@@ -123,23 +146,58 @@ function Analyze() {
     return Math.min(100, Math.max(0, ((v - field.min) / (field.max - field.min)) * 100))
   }
 
+  // Common farm details section
+  const FarmDetailsSection = () => (
+    <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 pb-6 border-b border-white/5">
+      <div>
+        <label className="flex items-center gap-2 text-sm font-medium text-gray-300 mb-2">
+          <span className="material-icons-round text-lg text-emerald-400">location_on</span>
+          Farm / Field Name
+        </label>
+        <input
+          type="text"
+          value={farmName}
+          onChange={(e) => { setFarmName(e.target.value); if (validationErrors.farm_name) setValidationErrors(prev => ({ ...prev, farm_name: null })) }}
+          placeholder="e.g. Sunnyvale Orchard"
+          disabled={loading}
+          className={`w-full px-4 py-3 rounded-lg border bg-[#071f15] text-white placeholder-gray-600 transition-all focus:ring-2 focus:outline-none disabled:opacity-50 ${validationErrors.farm_name ? 'border-red-500/50 focus:ring-red-500/30' : 'border-white/10 focus:border-emerald-500/50 focus:ring-emerald-500/20'
+            }`}
+        />
+        {validationErrors.farm_name && <p className="text-xs text-red-400 mt-1">{validationErrors.farm_name}</p>}
+      </div>
+      <div>
+        <label className="flex items-center gap-2 text-sm font-medium text-gray-300 mb-2">
+          <span className="material-icons-round text-lg text-emerald-400">eco</span>
+          Crop Type
+        </label>
+        <select
+          value={cropType}
+          onChange={(e) => { setCropType(e.target.value); if (validationErrors.crop_type) setValidationErrors(prev => ({ ...prev, crop_type: null })) }}
+          disabled={loading}
+          className={`select-styled w-full py-3 ${validationErrors.crop_type ? 'border-red-500/50' : ''
+            }`}
+        >
+          <option value="">Select crop type...</option>
+          {cropTypes.map(c => <option key={c} value={c}>{c}</option>)}
+        </select>
+        {validationErrors.crop_type && <p className="text-xs text-red-400 mt-1">{validationErrors.crop_type}</p>}
+      </div>
+    </div>
+  )
+
   return (
-    <div className="min-h-screen bg-[#07281b]">
-      {/* Top Bar */}
-      <header className="bg-[#07281b]/80 backdrop-blur-md border-b border-[#00ff4c]/10 px-6 py-4">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div className="h-full">
+      {/* Header */}
+      <header className="dash-header">
+        <div className="dash-header-inner">
           <div>
-            <div className="flex items-center gap-2 text-sm text-[#8faeb0] mb-1">
-              <button onClick={() => navigate('/dashboard')} className="hover:text-[#00ff4c] transition-colors">Dashboard</button>
-              <span className="material-icons-round text-xs">chevron_right</span>
-              <span className="text-white">Analysis Hub</span>
-            </div>
-            <h1 className="text-2xl font-bold text-white">Analysis Hub</h1>
+            <h1>Analysis Hub</h1>
+            <p>Run sensor-based or image-based crop analysis</p>
           </div>
           <button
             onClick={(e) => analyzeMethod === 'sensor' ? handleSensorSubmit(e) : handleImageSubmit(e)}
             disabled={loading}
-            className="bg-[#00ff4c] hover:bg-[#00cc3e] disabled:opacity-50 text-white px-5 py-2.5 rounded-lg text-sm font-medium shadow-lg shadow-[#00ff4c]/20 transition-all flex items-center gap-2"
+            className="bg-[#00ff4c] hover:bg-[#00cc3e] disabled:opacity-50 text-[#001a0a] px-5 py-2.5 rounded-lg text-sm font-semibold shadow-lg shadow-[#00ff4c]/20 transition-all flex items-center gap-2"
           >
             <span className="material-icons-round text-sm">play_arrow</span>
             {loading ? 'Analyzing...' : 'Start New Analysis'}
@@ -150,27 +208,27 @@ function Analyze() {
       {/* Alerts */}
       <AnimatePresence>
         {(error || success) && (
-          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="max-w-7xl mx-auto px-6 pt-4">
-            <div className={`p-4 rounded-xl flex items-start gap-3 ${error ? 'bg-red-500/10 border border-red-500/20' : 'bg-[#00ff4c]/10 border border-[#00ff4c]/20'}`}>
-              <span className={`material-icons-round text-lg ${error ? 'text-red-400' : 'text-[#00ff4c]'}`}>{error ? 'error_outline' : 'check_circle'}</span>
-              <p className={`text-sm ${error ? 'text-red-300' : 'text-[#00ff4c]'}`}>{error || success}</p>
+          <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} className="max-w-[1200px] mx-auto px-6 pt-4">
+            <div className={`p-4 rounded-xl flex items-start gap-3 ${error ? 'bg-red-500/10 border border-red-500/20' : 'bg-emerald-500/10 border border-emerald-500/20'}`}>
+              <span className={`material-icons-round text-lg ${error ? 'text-red-400' : 'text-emerald-400'}`}>{error ? 'error_outline' : 'check_circle'}</span>
+              <p className={`text-sm ${error ? 'text-red-300' : 'text-emerald-400'}`}>{error || success}</p>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      <div className="max-w-7xl mx-auto px-6 py-6">
+      <div className="max-w-[1200px] mx-auto px-6 py-6">
         {/* Method Tabs */}
         <div className="flex gap-2 mb-6">
           <button
             onClick={() => { setAnalyzeMethod('sensor'); setValidationErrors({}); setError(null) }}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${analyzeMethod === 'sensor' ? 'bg-[#00ff4c]/10 text-[#00ff4c] border border-[#00ff4c]/20' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${analyzeMethod === 'sensor' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
           >
             <span className="material-icons-round text-lg">sensors</span> Sensor Data
           </button>
           <button
             onClick={() => { setAnalyzeMethod('image'); setValidationErrors({}); setError(null) }}
-            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${analyzeMethod === 'image' ? 'bg-[#00ff4c]/10 text-[#00ff4c] border border-[#00ff4c]/20' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
+            className={`px-4 py-2 rounded-lg text-sm font-medium transition-all flex items-center gap-2 ${analyzeMethod === 'image' ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20' : 'text-gray-400 hover:text-white hover:bg-white/5'}`}
           >
             <span className="material-icons-round text-lg">image</span> Field Image
           </button>
@@ -182,16 +240,18 @@ function Analyze() {
             {analyzeMethod === 'sensor' ? (
               <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="glass-panel rounded-xl p-6">
                 <div className="flex items-center gap-3 mb-6">
-                  <div className="p-2 bg-[#00ff4c]/20 rounded-lg">
-                    <span className="material-icons-round text-[#00ff4c]">sensors</span>
+                  <div className="p-2 bg-emerald-500/20 rounded-lg">
+                    <span className="material-icons-round text-emerald-400">sensors</span>
                   </div>
                   <div>
                     <h2 className="text-lg font-bold text-white">Sensor Input Panel</h2>
-                    <p className="text-sm text-[#8faeb0]">Enter real-time sensor readings below</p>
+                    <p className="text-sm text-[#8faeb0]">Enter farm details and real-time sensor readings</p>
                   </div>
                 </div>
 
                 <form onSubmit={handleSensorSubmit} className="space-y-5">
+                  <FarmDetailsSection />
+
                   {sensorFields.map((field, i) => (
                     <motion.div
                       key={field.name}
@@ -218,9 +278,8 @@ function Analyze() {
                             onChange={handleSensorChange}
                             placeholder={`${field.min}${field.unit} – ${field.max}${field.unit}`}
                             disabled={loading}
-                            className={`w-full px-4 py-3 rounded-lg border bg-[#071f15] text-white placeholder-gray-600 transition-all focus:ring-2 focus:outline-none disabled:opacity-50 ${
-                              validationErrors[field.name] ? 'border-red-500/50 focus:ring-red-500/30' : 'border-white/10 focus:border-[#00ff4c]/50 focus:ring-[#00ff4c]/20'
-                            }`}
+                            className={`w-full px-4 py-3 rounded-lg border bg-[#071f15] text-white placeholder-gray-600 transition-all focus:ring-2 focus:outline-none disabled:opacity-50 ${validationErrors[field.name] ? 'border-red-500/50 focus:ring-red-500/30' : 'border-white/10 focus:border-emerald-500/50 focus:ring-emerald-500/20'
+                              }`}
                           />
                           {field.unit && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#8faeb0]">{field.unit}</span>}
                         </div>
@@ -244,7 +303,7 @@ function Analyze() {
                   <button
                     type="submit"
                     disabled={loading}
-                    className="w-full mt-4 bg-[#00ff4c] hover:bg-[#00cc3e] disabled:opacity-50 text-white py-3 rounded-lg font-semibold shadow-lg shadow-[#00ff4c]/20 transition-all flex items-center justify-center gap-2"
+                    className="w-full mt-4 bg-[#00ff4c] hover:bg-[#00cc3e] disabled:opacity-50 text-[#001a0a] py-3 rounded-lg font-semibold shadow-lg shadow-[#00ff4c]/20 transition-all flex items-center justify-center gap-2"
                   >
                     {loading ? (
                       <>
@@ -268,15 +327,17 @@ function Analyze() {
                   </div>
                   <div>
                     <h2 className="text-lg font-bold text-white">Image Upload</h2>
-                    <p className="text-sm text-[#8faeb0]">Upload a field image for AI analysis</p>
+                    <p className="text-sm text-[#8faeb0]">Enter farm details and upload a field image for AI analysis</p>
                   </div>
                 </div>
 
                 <form onSubmit={handleImageSubmit}>
+                  <FarmDetailsSection />
+
                   <input type="file" id="image-input" accept="image/*" onChange={handleImageSelect} disabled={loading} className="hidden" />
                   <label
                     htmlFor="image-input"
-                    className="block border-2 border-dashed border-white/10 rounded-xl hover:border-[#00ff4c]/30 transition-all cursor-pointer group"
+                    className="block border-2 border-dashed border-white/10 rounded-xl hover:border-emerald-500/30 transition-all cursor-pointer group"
                   >
                     {imagePreview ? (
                       <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="p-4 text-center">
@@ -285,8 +346,8 @@ function Analyze() {
                       </motion.div>
                     ) : (
                       <div className="text-center py-16">
-                        <div className="w-16 h-16 mx-auto rounded-full bg-[#00ff4c]/10 flex items-center justify-center mb-4 group-hover:bg-[#00ff4c]/20 transition-colors">
-                          <span className="material-icons-round text-3xl text-[#00ff4c]">cloud_upload</span>
+                        <div className="w-16 h-16 mx-auto rounded-full bg-emerald-500/10 flex items-center justify-center mb-4 group-hover:bg-emerald-500/20 transition-colors">
+                          <span className="material-icons-round text-3xl text-emerald-400">cloud_upload</span>
                         </div>
                         <p className="text-white font-semibold mb-1">Drop your field image here</p>
                         <p className="text-sm text-[#8faeb0]">or click to browse • JPG, PNG, WebP</p>
@@ -297,7 +358,7 @@ function Analyze() {
                   <button
                     type="submit"
                     disabled={loading || !imageFile}
-                    className="w-full mt-6 bg-[#00ff4c] hover:bg-[#00cc3e] disabled:opacity-50 text-white py-3 rounded-lg font-semibold shadow-lg shadow-[#00ff4c]/20 transition-all flex items-center justify-center gap-2"
+                    className="w-full mt-6 bg-[#00ff4c] hover:bg-[#00cc3e] disabled:opacity-50 text-[#001a0a] py-3 rounded-lg font-semibold shadow-lg shadow-[#00ff4c]/20 transition-all flex items-center justify-center gap-2"
                   >
                     {loading ? (
                       <>
@@ -319,7 +380,7 @@ function Analyze() {
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {[
                 { icon: 'schedule', title: 'Last Reading', value: '2 min ago', desc: 'Auto-sync active', color: 'text-blue-400', bg: 'bg-blue-500/20' },
-                { icon: 'trending_up', title: 'Trend', value: '+2.4%', desc: 'Improving vs last week', color: 'text-[#00ff4c]', bg: 'bg-[#00ff4c]/20' },
+                { icon: 'trending_up', title: 'Trend', value: '+2.4%', desc: 'Improving vs last week', color: 'text-emerald-400', bg: 'bg-emerald-500/20' },
                 { icon: 'psychology', title: 'AI Model', value: 'v3.2', desc: '96.4% accuracy', color: 'text-purple-400', bg: 'bg-purple-500/20' },
               ].map((card, i) => (
                 <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + i * 0.1 }} className="glass-panel rounded-xl p-4">
@@ -346,7 +407,7 @@ function Analyze() {
               <div className="flex items-center justify-between mb-6">
                 <h3 className="text-lg font-bold text-white">Live Results</h3>
                 <div className="flex items-center gap-1.5">
-                  <span className={`w-2 h-2 rounded-full ${liveResults ? 'bg-[#00ff4c] animate-pulse' : 'bg-gray-600'}`} />
+                  <span className={`w-2 h-2 rounded-full ${liveResults ? 'bg-emerald-400 animate-pulse' : 'bg-gray-600'}`} />
                   <span className="text-xs text-[#8faeb0]">{liveResults ? 'Active' : 'Waiting'}</span>
                 </div>
               </div>
@@ -358,7 +419,7 @@ function Analyze() {
                     <div className="relative w-36 h-36 mx-auto mb-4">
                       <svg className="w-full h-full -rotate-90" viewBox="0 0 120 120">
                         <circle cx="60" cy="60" r="52" fill="none" stroke="#0a2f22" strokeWidth="8" />
-                        <circle cx="60" cy="60" r="52" fill="none" stroke="#00ff4c" strokeWidth="8" strokeLinecap="round"
+                        <circle cx="60" cy="60" r="52" fill="none" stroke="#10b981" strokeWidth="8" strokeLinecap="round"
                           strokeDasharray={`${liveResults.confidence * 3.267} 326.7`} />
                       </svg>
                       <div className="absolute inset-0 flex flex-col items-center justify-center">
@@ -366,11 +427,10 @@ function Analyze() {
                         <span className="text-xs text-[#8faeb0]">Confidence</span>
                       </div>
                     </div>
-                    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${
-                      liveResults.health_status === 'Healthy'
-                        ? 'bg-[#00ff4c]/10 text-[#00ff4c] border border-[#00ff4c]/20'
-                        : 'bg-red-500/10 text-red-500 border border-red-500/20'
-                    }`}>
+                    <span className={`inline-flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium ${liveResults.health_status === 'Healthy'
+                        ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/20'
+                        : 'bg-red-500/10 text-red-400 border border-red-500/20'
+                      }`}>
                       <span className="material-icons-round text-sm">{liveResults.health_status === 'Healthy' ? 'check_circle' : 'warning'}</span>
                       {liveResults.health_status}
                     </span>
@@ -379,7 +439,7 @@ function Analyze() {
                   {/* AI Recommendations */}
                   <div className="border-t border-white/5 pt-5">
                     <h4 className="text-xs font-semibold text-[#8faeb0] uppercase tracking-wider mb-3 flex items-center gap-2">
-                      <span className="material-icons-round text-sm text-[#00ff4c]">auto_awesome</span>
+                      <span className="material-icons-round text-sm text-emerald-400">auto_awesome</span>
                       AI Recommendations
                     </h4>
                     <div className="space-y-3">
@@ -391,7 +451,7 @@ function Analyze() {
                           transition={{ delay: i * 0.1 }}
                           className="flex items-start gap-3 p-3 rounded-lg bg-[#071f15] border border-white/5"
                         >
-                          <span className="text-xs font-bold text-[#00ff4c] mt-0.5">{String(i + 1).padStart(2, '0')}</span>
+                          <span className="text-xs font-bold text-emerald-400 mt-0.5">{String(i + 1).padStart(2, '0')}</span>
                           <p className="text-sm text-gray-300">{rec}</p>
                         </motion.div>
                       ))}
@@ -414,12 +474,12 @@ function Analyze() {
               initial={{ opacity: 0, y: 10 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.5 }}
-              className="rounded-xl p-5 bg-gradient-to-br from-[#00ff4c]/20 to-emerald-900/20 border border-[#00ff4c]/20"
+              className="rounded-xl p-5 bg-gradient-to-br from-emerald-500/20 to-emerald-900/20 border border-emerald-500/20"
             >
-              <span className="material-icons-round text-[#00ff4c] text-2xl mb-3 block">rocket_launch</span>
+              <span className="material-icons-round text-emerald-400 text-2xl mb-3 block">rocket_launch</span>
               <h4 className="text-white font-bold mb-1">Pro Tip</h4>
               <p className="text-sm text-[#8faeb0] mb-3">Enable automated sensor syncing for real-time monitoring with instant alerts.</p>
-              <button className="text-sm text-[#00ff4c] font-medium flex items-center gap-1 hover:gap-2 transition-all">
+              <button className="text-sm text-emerald-400 font-medium flex items-center gap-1 hover:gap-2 transition-all">
                 Learn more <span className="material-icons-round text-sm">arrow_forward</span>
               </button>
             </motion.div>
