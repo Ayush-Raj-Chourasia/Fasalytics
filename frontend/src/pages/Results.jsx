@@ -16,7 +16,6 @@ function Results() {
   const { id } = useParams()
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(null)
 
   useEffect(() => { fetchResults() }, [id])
 
@@ -25,7 +24,8 @@ function Results() {
       const response = await api.getResults(id)
       setResult(response.data)
     } catch (err) {
-      setError('Failed to load analysis results')
+      // API not available — silently fall back to demo data
+      console.warn('Results API not available, using demo data')
     } finally {
       setLoading(false)
     }
@@ -81,7 +81,7 @@ function Results() {
   }
 
   if (loading) return (
-    <div className="h-full flex items-center justify-center">
+    <div className="h-full flex items-center justify-center" style={{ minHeight: '60vh' }}>
       <div className="flex flex-col items-center gap-3">
         <div className="w-10 h-10 border-3 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
         <p className="text-[#8faeb0] text-sm">Loading results...</p>
@@ -96,7 +96,7 @@ function Results() {
         <div className="dash-header-inner">
           <div className="flex items-center gap-3">
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => navigate('/dashboard')}
               className="p-2 rounded-lg hover:bg-white/5 text-gray-400 hover:text-white transition-colors"
             >
               <span className="material-icons-round">arrow_back</span>

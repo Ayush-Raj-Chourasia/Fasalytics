@@ -937,16 +937,17 @@ body {
 
 /* ===== GLASS PANEL (global usage) ===== */
 .glass-panel {
-  background: linear-gradient(135deg, rgba(0, 255, 76, 0.04) 0%, rgba(0, 255, 76, 0.02) 100%);
-  border: 1px solid rgba(0, 255, 76, 0.07);
+  background: linear-gradient(135deg, rgba(0, 255, 76, 0.03) 0%, rgba(0, 255, 76, 0.01) 100%);
+  border: 1px solid rgba(0, 255, 76, 0.08);
   border-radius: 16px;
   backdrop-filter: blur(12px);
   padding: 24px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
 }
 
 .glass-panel:hover {
-  border-color: rgba(0, 255, 76, 0.18);
-  transition: border-color 0.3s ease;
+  border-color: rgba(0, 255, 76, 0.16);
+  box-shadow: 0 0 0 1px rgba(0, 255, 76, 0.04);
 }
 
 /* ===== GRADIENT BUTTON ===== */
@@ -1203,6 +1204,7 @@ body {
   height: 100vh;
   overflow-y: auto;
   overflow-x: hidden;
+  scroll-behavior: smooth;
 }
 
 /* ===== SIDEBAR ===== */
@@ -1469,11 +1471,11 @@ body {
   position: sticky;
   top: 0;
   z-index: 10;
-  background: rgba(7, 40, 27, 0.85);
-  backdrop-filter: blur(16px);
-  -webkit-backdrop-filter: blur(16px);
+  background: rgba(7, 40, 27, 0.92);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(0, 255, 76, 0.08);
-  padding: 16px 24px;
+  padding: 18px 24px;
 }
 
 .dash-header-inner {
@@ -1487,16 +1489,18 @@ body {
 }
 
 .dash-header h1 {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 700;
   color: white;
   margin: 0;
+  letter-spacing: -0.01em;
 }
 
 .dash-header p {
   font-size: 13px;
   color: #8faeb0;
-  margin: 2px 0 0 0;
+  margin: 4px 0 0 0;
+  line-height: 1.4;
 }
 
 /* ===== RECHARTS OVERRIDES ===== */
@@ -1521,5 +1525,25 @@ body {
 }
 
 .recharts-cartesian-grid line {
-  stroke: rgba(255, 255, 255, 0.04) !important;
+  stroke: rgba(255, 255, 255, 0.05) !important;
+}
+
+/* Prevent recharts SVG elements from overlapping */
+.recharts-surface {
+  overflow: visible;
+}
+
+.recharts-wrapper {
+  font-family: 'Inter', sans-serif !important;
+}
+
+/* Clean bar chart rendering */
+.recharts-bar-rectangle {
+  filter: none !important;
+}
+
+/* Ensure text inside charts is crisp */
+.recharts-text {
+  font-family: 'Inter', sans-serif !important;
+  -webkit-font-smoothing: antialiased;
 }

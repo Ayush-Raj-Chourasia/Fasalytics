@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react'
-import { BrowserRouter, Routes, Route, useLocation } from 'react-router-dom'
-import { motion, AnimatePresence } from 'framer-motion'
+import { BrowserRouter, Routes, Route, useLocation, Outlet } from 'react-router-dom'
+import { motion } from 'framer-motion'
 import Navigation from './components/Navigation'
 import Footer from './components/Footer'
 import DashboardSidebar from './components/DashboardSidebar'
@@ -12,67 +12,61 @@ import Results from './pages/Results'
 import { initializeCSRF } from './api/client'
 import './styles/app.css'
 
-function DashboardLayout() {
-  const location = useLocation()
+const pageVariants = {
+  initial: { opacity: 0, y: 8 },
+  animate: { opacity: 1, y: 0 },
+}
 
+const pageTransition = { duration: 0.25, ease: 'easeOut' }
+
+function DashboardLayout() {
   return (
     <div className="dashboard-layout">
       <DashboardSidebar />
       <main className="dashboard-main">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={location.pathname}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.15 }}
-            style={{ height: '100%' }}
-          >
-            <Routes location={location}>
-              <Route path="/dashboard" element={<Dashboard />} />
-              <Route path="/analyze" element={<Analyze />} />
-              <Route path="/history" element={<History />} />
-              <Route path="/results/:id" element={<Results />} />
-            </Routes>
-          </motion.div>
-        </AnimatePresence>
+        <Outlet />
       </main>
     </div>
   )
 }
 
-function AppContent() {
-  const location = useLocation()
-  const isHome = location.pathname === '/'
-  const isDashboardRoute = ['/dashboard', '/analyze', '/history'].includes(location.pathname) || location.pathname.startsWith('/results/')
-
-  useEffect(() => {
-    window.scrollTo(0, 0)
-  }, [location.pathname])
-
-  if (isDashboardRoute) {
-    return <DashboardLayout />
-  }
-
+function HomeLayout() {
   return (
     <>
       <Navigation />
-      <AnimatePresence mode="wait">
-        <motion.div
-          key={location.pathname}
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          transition={{ duration: 0.3 }}
-        >
-          <Routes location={location}>
-            <Route path="/" element={<Home />} />
-          </Routes>
-        </motion.div>
-      </AnimatePresence>
+      <motion.div
+        variants={pageVariants}
+        initial="initial"
+        animate="animate"
+        transition={pageTransition}
+      >
+        <Outlet />
+      </motion.div>
       <Footer />
     </>
   )
+}
+
+function PageWrapper({ children }) {
+  return (
+    <motion.div
+      variants={pageVariants}
+      initial="initial"
+      animate="animate"
+      transition={pageTransition}
+      style={{ minHeight: '100%' }}
+    >
+      {children}
+    </motion.div>
+  )
+}
+
+function ScrollToTop() {
+  const location = useLocation()
+  useEffect(() => {
+    window.scrollTo(0, 0)
+  }, [location.pathname])
+  return null
 }
 
 function App() {
@@ -82,9 +76,23 @@ function App() {
 
   return (
     <BrowserRouter>
+      <ScrollToTop />
       <div className="bg-[#07281b] min-h-screen flex flex-col">
         <main className="flex-1 w-full">
-          <AppContent />
+          <Routes>
+            {/* Home route with nav/footer */}
+            <Route element={<HomeLayout />}>
+              <Route path="/" element={<Home />} />
+            </Route>
+
+            {/* Dashboard routes with sidebar */}
+            <Route element={<DashboardLayout />}>
+              <Route path="/dashboard" element={<PageWrapper><Dashboard /></PageWrapper>} />
+              <Route path="/analyze" element={<PageWrapper><Analyze /></PageWrapper>} />
+              <Route path="/history" element={<PageWrapper><History /></PageWrapper>} />
+              <Route path="/results/:id" element={<PageWrapper><Results /></PageWrapper>} />
+            </Route>
+          </Routes>
         </main>
       </div>
     </BrowserRouter>

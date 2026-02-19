@@ -34,13 +34,13 @@ function Dashboard() {
     stressed_percentage: 30,
     avg_confidence: 96.4,
     trend_data: [
-      { name: 'Mon', healthy: 70, stressed: 20 },
-      { name: 'Tue', healthy: 65, stressed: 15 },
-      { name: 'Wed', healthy: 80, stressed: 10 },
-      { name: 'Thu', healthy: 50, stressed: 30 },
-      { name: 'Fri', healthy: 75, stressed: 15 },
-      { name: 'Sat', healthy: 85, stressed: 8 },
-      { name: 'Sun', healthy: 78, stressed: 12 },
+      { name: 'Mon', healthy: 72, stressed: 18 },
+      { name: 'Tue', healthy: 65, stressed: 22 },
+      { name: 'Wed', healthy: 80, stressed: 12 },
+      { name: 'Thu', healthy: 55, stressed: 28 },
+      { name: 'Fri', healthy: 78, stressed: 15 },
+      { name: 'Sat', healthy: 88, stressed: 8 },
+      { name: 'Sun', healthy: 82, stressed: 14 },
     ],
     recent_analyses: []
   }
@@ -61,7 +61,7 @@ function Dashboard() {
   const kpis = [
     { label: 'Total Analyses', value: data.total_analyses.toLocaleString(), trend: '+12%', trendUp: true, color: 'primary', icon: 'assessment' },
     { label: 'Healthy Crops', value: data.healthy_count.toLocaleString(), trend: '+5%', trendUp: true, color: 'primary', icon: 'spa' },
-    { label: 'Stressed Crops', value: data.stressed_count.toLocaleString(), trend: '+2.4%', trendUp: true, color: 'danger', icon: 'warning', border: true },
+    { label: 'Stressed Crops', value: data.stressed_count.toLocaleString(), trend: '+2.4%', trendUp: true, color: 'danger', icon: 'warning' },
     { label: 'AI Confidence', value: `${data.avg_confidence}%`, trend: '-0.1%', trendUp: false, color: 'blue', icon: 'psychology' },
   ]
 
@@ -104,7 +104,7 @@ function Dashboard() {
       {/* Header */}
       <header className="dash-header">
         <div className="dash-header-inner">
-          <div>
+          <div className="flex-1 text-center sm:text-left">
             <h1>Overview</h1>
             <p>Welcome back, here's today's crop health analysis.</p>
           </div>
@@ -140,7 +140,9 @@ function Dashboard() {
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: i * 0.1 }}
-              className={`glass-panel rounded-xl p-5 relative overflow-hidden transition-all duration-300 hover:border-[#00ff4c]/30 ${kpi.border ? 'border-l-4 border-l-red-500' : ''}`}
+              className={`glass-panel rounded-xl p-5 relative overflow-hidden transition-all duration-300 hover:border-[#00ff4c]/30 ${
+                kpi.color === 'danger' ? 'border-red-500/30' : ''
+              }`}
             >
               <div className="flex justify-between items-start mb-4">
                 <div>
@@ -184,13 +186,13 @@ function Dashboard() {
               </div>
             </div>
             <ResponsiveContainer width="100%" height={256}>
-              <BarChart data={data.trend_data} barGap={4}>
-                <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.04)" vertical={false} />
-                <XAxis dataKey="name" stroke="#8faeb0" fontSize={12} tickLine={false} axisLine={false} />
-                <YAxis stroke="#8faeb0" fontSize={12} tickLine={false} axisLine={false} />
-                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)' }} />
-                <Bar dataKey="healthy" fill="#10b981" radius={[6, 6, 0, 0]} />
-                <Bar dataKey="stressed" fill="#f87171" radius={[6, 6, 0, 0]} />
+              <BarChart data={data.trend_data} barGap={6} barCategoryGap="20%">
+                <CartesianGrid strokeDasharray="4 4" stroke="rgba(255,255,255,0.06)" vertical={false} horizontalPoints={[]} />
+                <XAxis dataKey="name" stroke="#8faeb0" fontSize={12} tickLine={false} axisLine={{ stroke: 'rgba(255,255,255,0.06)' }} dy={8} />
+                <YAxis stroke="#8faeb0" fontSize={12} tickLine={false} axisLine={false} width={40} />
+                <Tooltip content={<CustomTooltip />} cursor={{ fill: 'rgba(255,255,255,0.03)', radius: 6 }} />
+                <Bar dataKey="healthy" fill="#10b981" radius={[6, 6, 0, 0]} maxBarSize={36} />
+                <Bar dataKey="stressed" fill="#f87171" radius={[6, 6, 0, 0]} maxBarSize={36} />
               </BarChart>
             </ResponsiveContainer>
           </motion.div>
@@ -247,7 +249,10 @@ function Dashboard() {
           className="glass-panel rounded-xl overflow-hidden"
         >
           <div className="px-6 py-5 border-b border-white/5 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-            <h2 className="text-lg font-bold text-white">Recent Field Analyses</h2>
+            <div>
+              <h2 className="text-lg font-bold text-white">Recent Field Analyses</h2>
+              <p className="text-xs text-[#8faeb0] mt-1">Latest crop health assessments from your fields</p>
+            </div>
             <div className="flex gap-2">
               <button className="px-3 py-1.5 text-sm text-[#8faeb0] hover:text-white border border-white/10 rounded-lg hover:bg-white/5 transition-colors">Filter</button>
               <button className="px-3 py-1.5 text-sm text-[#8faeb0] hover:text-white border border-white/10 rounded-lg hover:bg-white/5 transition-colors">Export</button>
@@ -256,27 +261,30 @@ function Dashboard() {
           <div className="overflow-x-auto">
             <table className="w-full text-left border-collapse">
               <thead>
-                <tr className="bg-[#0a2f22]/50 border-b border-white/5 text-xs uppercase tracking-wider text-[#8faeb0] font-semibold">
-                  <th className="px-6 py-4">Farm Name</th>
-                  <th className="px-6 py-4">Analysis Date</th>
-                  <th className="px-6 py-4">Crop Type</th>
-                  <th className="px-6 py-4">Confidence</th>
-                  <th className="px-6 py-4">Status</th>
-                  <th className="px-6 py-4 text-right">Action</th>
+                <tr className="bg-[#0a2f22]/50 border-b border-white/5 text-[11px] uppercase tracking-wider text-[#8faeb0] font-semibold">
+                  <th className="px-6 py-3.5 text-left">Farm Name</th>
+                  <th className="px-6 py-3.5 text-left">Analysis Date</th>
+                  <th className="px-6 py-3.5 text-left">Crop Type</th>
+                  <th className="px-6 py-3.5 text-left">Confidence</th>
+                  <th className="px-6 py-3.5 text-left">Status</th>
+                  <th className="px-6 py-3.5 text-right">Action</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
                 {mockRecent.map((row) => (
-                  <tr key={row.id} className="hover:bg-white/5 transition-colors">
+                  <tr key={row.id} className="hover:bg-white/[0.03] transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className={`w-8 h-8 rounded ${row.iconBg} flex items-center justify-center ${row.iconColor}`}>
+                        <div className={`w-9 h-9 rounded-lg ${row.iconBg} flex items-center justify-center ${row.iconColor}`}>
                           <span className="material-icons-round text-sm">{row.icon}</span>
                         </div>
-                        <span className="font-medium text-gray-200">{row.farm_name}</span>
+                        <span className="font-medium text-gray-200 text-sm">{row.farm_name}</span>
                       </div>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-400">{row.date} <span className="text-xs ml-1 opacity-50">{row.time}</span></td>
+                    <td className="px-6 py-4">
+                      <span className="text-sm text-gray-300">{row.date}</span>
+                      <span className="text-xs text-gray-500 ml-1.5">{row.time}</span>
+                    </td>
                     <td className="px-6 py-4 text-sm text-gray-300">{row.crop}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
@@ -293,9 +301,9 @@ function Dashboard() {
                     <td className="px-6 py-4 text-right">
                       <button
                         onClick={() => navigate(`/results/${row.id}`)}
-                        className="text-sm text-emerald-400 hover:text-emerald-300 font-medium transition-colors"
+                        className="text-sm text-emerald-400 hover:text-emerald-300 font-medium transition-colors inline-flex items-center gap-1 group-hover:gap-2"
                       >
-                        View Report →
+                        View Report <span className="transition-all">→</span>
                       </button>
                     </td>
                   </tr>
