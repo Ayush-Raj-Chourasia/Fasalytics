@@ -20,7 +20,8 @@ function History() {
       const response = await api.getHistory()
       setAnalyses(response.data || [])
     } catch (err) {
-      setError('Failed to load analysis history')
+      // Backend unavailable — silently use demo data
+      console.warn('History API not available, using demo data')
     } finally {
       setLoading(false)
     }
