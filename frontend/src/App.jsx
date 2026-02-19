@@ -51,7 +51,7 @@ function App() {
 
   return (
     <BrowserRouter>
-      <div className="bg-[#10221a] min-h-screen flex flex-col">
+      <div className="bg-[#07281b] min-h-screen flex flex-col">
         <main className="flex-1 w-full">
           <AppContent />
         </main>
