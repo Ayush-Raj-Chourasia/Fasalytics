@@ -12,9 +12,9 @@ export default function GlassPanel({ children, className = '', role = 'region' }
   return (
     <div
       className={clsx(
-        'backdrop-blur-md bg-white/60 dark:bg-[#0c1216]/60',
-        'border border-white/6 rounded-lg shadow-soft',
-        'p-6 will-change-transform', 
+        'backdrop-blur-xl bg-[#0c1216]/60',
+        'border border-[#0fbf75]/15 rounded-2xl',
+        'p-6 will-change-transform',
         className
       )}
       role={role}

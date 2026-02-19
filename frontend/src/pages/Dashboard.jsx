@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { 
+import {
   BarChart, Bar, LineChart, Line, PieChart, Pie, Cell,
   XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer
 } from 'recharts'
@@ -8,7 +8,6 @@ import { BarChart3, TrendingUp, AlertCircle, CheckCircle2 } from 'lucide-react'
 import { api } from '../api/client'
 import { GlassPanel, Reveal, StatCard, SkeletonCard } from '../ui'
 import LoadingSpinner from '../components/LoadingSpinner'
-import '../styles/dashboard.css'
 
 function Dashboard() {
   const [dashboardData, setDashboardData] = useState(null)
@@ -59,49 +58,47 @@ function Dashboard() {
   ]
 
   return (
-    <div className="bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-950 min-h-screen">
+    <div className="min-h-screen bg-[#0F1724] pt-24">
       {/* Header */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
-        <Reveal>
-          <div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 dark:text-white">
-              Analytics Dashboard
-            </h1>
-            <p className="mt-2 text-lg text-gray-600 dark:text-gray-300">
-              Overview of all crop health analyses and real-time metrics
-            </p>
-          </div>
-        </Reveal>
+      <div className="bg-gradient-to-r from-[#0fbf75]/10 to-[#00D28A]/5 border-b border-[#0fbf75]/20 px-4 sm:px-6 lg:px-8 py-8">
+        <div className="max-w-7xl mx-auto">
+          <h1 className="text-4xl font-bold text-white mb-2">Crop Health Dashboard</h1>
+          <p className="text-gray-400">Real-time monitoring of your farm's crop health</p>
+        </div>
       </div>
 
-      {/* KPI Grid */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6">
+      {/* Content */}
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+        {/* Stats Cards */}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
           {loading ? (
             <>
-              {[...Array(4)].map((_, i) => <SkeletonCard key={i} className="h-40" />)}
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
+              <SkeletonCard />
             </>
           ) : (
             <>
-              <Reveal delay={0}>
-                <StatCard
-                  title="Total Analyses"
-                  value={mockData.total_analyses}
-                  trend={+12}
-                  sparkline={[10, 15, 20, 22, 25, 28, 30, 32, 35]}
-                />
-              </Reveal>
-
               <Reveal delay={0.1}>
                 <StatCard
-                  title="Healthy Crops"
-                  value={`${mockData.healthy_count}`}
+                  title="Total Analyses"
+                  value={`${mockData.total_analyses}`}
                   trend={+8}
-                  sparkline={[18, 20, 22, 25, 28, 32, 35, 38, 42]}
+                  sparkline={[10, 15, 13, 18, 20, 22, 21, 25, 27]}
                 />
               </Reveal>
 
               <Reveal delay={0.2}>
+                <StatCard
+                  title="Healthy Crops"
+                  value={`${mockData.healthy_count}`}
+                  trend={+5}
+                  sparkline={[60, 65, 68, 70, 72, 75, 78, 82, 89]}
+                />
+              </Reveal>
+
+              <Reveal delay={0.3}>
                 <StatCard
                   title="Stressed Crops"
                   value={`${mockData.stressed_count}`}
@@ -110,7 +107,7 @@ function Dashboard() {
                 />
               </Reveal>
 
-              <Reveal delay={0.3}>
+              <Reveal delay={0.4}>
                 <StatCard
                   title="Avg Confidence"
                   value={`${mockData.avg_confidence.toFixed(1)}%`}
@@ -121,35 +118,30 @@ function Dashboard() {
             </>
           )}
         </div>
-      </div>
 
-      {/* Charts Section */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-12">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 lg:gap-8">
+        {/* Charts */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Trend Chart */}
           <Reveal delay={0.2}>
             <GlassPanel className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Weekly Trend
-              </h3>
+              <h3 className="text-lg font-bold text-white mb-6">Weekly Trend</h3>
               {loading ? (
-                <div className="h-80 bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-lg animate-pulse" />
+                <div className="h-80 bg-gradient-to-br from-[#0fbf75]/10 to-[#00D28A]/5 rounded-lg animate-pulse" />
               ) : (
                 <ResponsiveContainer width="100%" height={300}>
                   <BarChart data={mockData.trend_data}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(0,0,0,0.1)" />
-                    <XAxis dataKey="name" stroke="rgba(0,0,0,0.5)" />
-                    <YAxis stroke="rgba(0,0,0,0.5)" />
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'rgba(15, 23, 36, 0.95)', 
-                        border: '1px solid rgba(255,255,255,0.1)',
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.1)" />
+                    <XAxis dataKey="name" stroke="rgba(255,255,255,0.5)" />
+                    <YAxis stroke="rgba(255,255,255,0.5)" />
+                    <Tooltip
+                      contentStyle={{
+                        backgroundColor: 'rgba(15, 23, 36, 0.95)',
+                        border: '1px solid rgba(15, 191, 117, 0.3)',
                         borderRadius: '8px'
                       }}
                       labelStyle={{ color: '#fff' }}
                     />
-                    <Legend />
-                    <Bar dataKey="healthy" fill="#10b981" radius={[8, 8, 0, 0]} />
+                    <Bar dataKey="healthy" fill="#0fbf75" radius={[8, 8, 0, 0]} />
                     <Bar dataKey="stressed" fill="#ef4444" radius={[8, 8, 0, 0]} />
                   </BarChart>
                 </ResponsiveContainer>
@@ -157,57 +149,43 @@ function Dashboard() {
             </GlassPanel>
           </Reveal>
 
-          {/* Health Status Pie */}
+          {/* Health Status */}
           <Reveal delay={0.3}>
             <GlassPanel className="p-6">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Health Distribution
-              </h3>
+              <h3 className="text-lg font-bold text-white mb-6">Health Distribution</h3>
               {loading ? (
-                <div className="h-80 bg-gradient-to-br from-gray-100 to-gray-50 dark:from-gray-800 dark:to-gray-900 rounded-lg animate-pulse" />
+                <div className="h-80 bg-gradient-to-br from-[#0fbf75]/10 to-[#00D28A]/5 rounded-lg animate-pulse" />
               ) : (
-                <ResponsiveContainer width="100%" height={300}>
-                  <PieChart>
-                    <Pie
-                      data={healthStatus}
-                      cx="50%"
-                      cy="50%"
-                      innerRadius={80}
-                      outerRadius={120}
-                      paddingAngle={2}
-                      dataKey="value"
-                    >
-                      {healthStatus.map((entry, index) => (
-                        <Cell key={`cell-${index}`} fill={entry.fill} />
-                      ))}
-                    </Pie>
-                    <Tooltip 
-                      contentStyle={{ 
-                        backgroundColor: 'rgba(15, 23, 36, 0.95)', 
-                        border: '1px solid rgba(255,255,255,0.1)',
-                        borderRadius: '8px',
-                        color: '#fff'
-                      }}
-                    />
-                  </PieChart>
-                </ResponsiveContainer>
+                <>
+                  <ResponsiveContainer width="100%" height={250}>
+                    <PieChart>
+                      <Pie
+                        data={healthStatus}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={100}
+                        paddingAngle={2}
+                        dataKey="value"
+                      >
+                        {healthStatus.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={entry.fill} />
+                        ))}
+                      </Pie>
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="mt-6 flex justify-center gap-8">
+                    <div className="text-center">
+                      <div className="w-3 h-3 rounded-full bg-[#0fbf75] mx-auto mb-2" />
+                      <p className="text-sm text-gray-400">Healthy {mockData.healthy_percentage}%</p>
+                    </div>
+                    <div className="text-center">
+                      <div className="w-3 h-3 rounded-full bg-red-500 mx-auto mb-2" />
+                      <p className="text-sm text-gray-400">Stressed {mockData.stressed_percentage}%</p>
+                    </div>
+                  </div>
+                </>
               )}
-              <div className="mt-4 flex justify-center gap-6">
-                <div className="text-center">
-                  <div className="w-3 h-3 rounded-full bg-green-500 mx-auto mb-2" />
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Healthy</div>
-                  <div className="font-semibold text-gray-900 dark:text-white">
-                    {mockData.healthy_percentage}%
-                  </div>
-                </div>
-                <div className="text-center">
-                  <div className="w-3 h-3 rounded-full bg-red-500 mx-auto mb-2" />
-                  <div className="text-sm text-gray-600 dark:text-gray-400">Stressed</div>
-                  <div className="font-semibold text-gray-900 dark:text-white">
-                    {mockData.stressed_percentage}%
-                  </div>
-                </div>
-              </div>
             </GlassPanel>
           </Reveal>
         </div>

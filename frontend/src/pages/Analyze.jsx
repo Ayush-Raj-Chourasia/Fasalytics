@@ -4,7 +4,6 @@ import { motion, AnimatePresence } from 'framer-motion'
 import { Upload, Zap, AlertCircle, CheckCircle2, ChevronRight } from 'lucide-react'
 import { api } from '../api/client'
 import { GlassPanel, GradientButton, Reveal } from '../ui'
-import '../styles/analyze.css'
 
 function Analyze() {
   const navigate = useNavigate()
@@ -27,19 +26,10 @@ function Analyze() {
 
   const handleSensorChange = (e) => {
     const { name, value } = e.target
-    setSensorData(prev => ({
-      ...prev,
-      [name]: value
-    }))
-    
-    // Clear validation error for this field on change
+    setSensorData(prev => ({ ...prev, [name]: value }))
     if (validationErrors[name]) {
-      setValidationErrors(prev => ({
-        ...prev,
-        [name]: null
-      }))
+      setValidationErrors(prev => ({ ...prev, [name]: null }))
     }
-    
     setError(null)
   }
 
@@ -89,7 +79,6 @@ function Analyze() {
 
   const handleSensorSubmit = async (e) => {
     e.preventDefault()
-
     if (!validateSensorData()) return
 
     setLoading(true)
@@ -101,14 +90,10 @@ function Analyze() {
         leaf_wetness: parseFloat(sensorData.leaf_wetness),
         ph_level: parseFloat(sensorData.ph_level)
       })
-
       setSuccess('Analysis submitted successfully!')
-      setTimeout(() => {
-        navigate(`/results/${response.data.id}`)
-      }, 1500)
+      setTimeout(() => navigate(`/results/${response.data.id}`), 1500)
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to analyze crop data')
-      console.error(err)
     } finally {
       setLoading(false)
     }
@@ -116,7 +101,6 @@ function Analyze() {
 
   const handleImageSubmit = async (e) => {
     e.preventDefault()
-
     if (!imageFile) {
       setError('Please select an image to analyze')
       return
@@ -129,40 +113,42 @@ function Analyze() {
     try {
       const response = await api.analyzeFromImage(formData)
       setSuccess('Image analysis submitted successfully!')
-      setTimeout(() => {
-        navigate(`/results/${response.data.id}`)
-      }, 1500)
+      setTimeout(() => navigate(`/results/${response.data.id}`), 1500)
     } catch (err) {
       setError(err.response?.data?.detail || 'Failed to analyze image')
-      console.error(err)
     } finally {
       setLoading(false)
     }
   }
 
-  // Mock live results preview
-  const liveResults = sensorData.soil_moisture && sensorData.temperature && sensorData.humidity 
+  const liveResults = sensorData.soil_moisture && sensorData.temperature && sensorData.humidity
     ? {
-        health_status: 'Healthy',
-        confidence: 87.5,
-        recommendations: [
-          'Maintain current watering schedule',
-          'Monitor humidity levels',
-          'Apply preventative fungicide'
-        ]
-      }
+      health_status: 'Healthy',
+      confidence: 87.5,
+      recommendations: [
+        'Maintain current watering schedule',
+        'Monitor humidity levels',
+        'Apply preventative fungicide'
+      ]
+    }
     : null
 
+  const inputClassName = (fieldName) =>
+    `w-full px-4 py-3 rounded-xl border transition-all bg-[#0a0f1a] text-white placeholder-gray-600 ${validationErrors[fieldName]
+      ? 'border-red-500/50 focus:ring-red-500/30'
+      : 'border-white/10 focus:border-[#0fbf75]/50 focus:ring-[#0fbf75]/20'
+    } focus:ring-2 focus:outline-none disabled:opacity-50`
+
   return (
-    <div className="bg-gradient-to-b from-white to-gray-50 dark:from-gray-900 dark:to-gray-950 min-h-screen">
+    <div className="min-h-screen bg-[#0F1724] pt-24">
       {/* Header */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8 lg:py-12">
         <Reveal>
           <div>
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-extrabold text-gray-900 dark:text-white">
+            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-white tracking-tight">
               Crop Health Analysis
             </h1>
-            <p className="mt-2 text-lg text-gray-600 dark:text-gray-300">
+            <p className="mt-3 text-base text-gray-400">
               Analyze your crops using sensor data or field images
             </p>
           </div>
@@ -170,24 +156,23 @@ function Analyze() {
       </div>
 
       {/* Method Selector */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-8">
         <Reveal delay={0.1}>
-          <div className="flex gap-3 lg:gap-4 max-w-md">
+          <div className="flex gap-3 max-w-md">
             <motion.button
               onClick={() => {
                 setAnalyzeMethod('sensor')
                 setValidationErrors({})
                 setError(null)
               }}
-              className={`flex-1 px-4 py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${
-                analyzeMethod === 'sensor'
-                  ? 'bg-gradient-primary text-white shadow-lg'
-                  : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 hover:border-primary-green'
-              }`}
+              className={`flex-1 px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 text-sm ${analyzeMethod === 'sensor'
+                  ? 'bg-gradient-to-r from-[#0fbf75] to-[#00D28A] text-white shadow-lg shadow-[#0fbf75]/20'
+                  : 'bg-[#0a0f1a] text-gray-300 border border-white/10 hover:border-[#0fbf75]/30'
+                }`}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              <Zap size={20} />
+              <Zap size={18} />
               <span>Sensor Data</span>
             </motion.button>
 
@@ -197,59 +182,57 @@ function Analyze() {
                 setValidationErrors({})
                 setError(null)
               }}
-              className={`flex-1 px-4 py-3 rounded-lg font-semibold transition-all flex items-center justify-center gap-2 ${
-                analyzeMethod === 'image'
-                  ? 'bg-gradient-primary text-white shadow-lg'
-                  : 'bg-white dark:bg-gray-800 text-gray-900 dark:text-white border border-gray-200 dark:border-gray-700 hover:border-primary-green'
-              }`}
+              className={`flex-1 px-4 py-3 rounded-xl font-semibold transition-all flex items-center justify-center gap-2 text-sm ${analyzeMethod === 'image'
+                  ? 'bg-gradient-to-r from-[#0fbf75] to-[#00D28A] text-white shadow-lg shadow-[#0fbf75]/20'
+                  : 'bg-[#0a0f1a] text-gray-300 border border-white/10 hover:border-[#0fbf75]/30'
+                }`}
               whileHover={{ scale: 1.02 }}
               whileTap={{ scale: 0.98 }}
             >
-              <Upload size={20} />
+              <Upload size={18} />
               <span>Field Image</span>
             </motion.button>
           </div>
         </Reveal>
       </div>
 
-      {/* Error Alert */}
+      {/* Alerts */}
       <AnimatePresence>
         {error && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="container mx-auto px-4 sm:px-6 lg:px-8 pb-4"
+            className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4"
           >
-            <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg flex items-start gap-3">
-              <AlertCircle size={20} className="text-red-600 dark:text-red-400 flex-shrink-0 mt-0.5" />
-              <p className="text-red-700 dark:text-red-300">{error}</p>
+            <div className="p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-start gap-3">
+              <AlertCircle size={20} className="text-red-400 flex-shrink-0 mt-0.5" />
+              <p className="text-red-300 text-sm">{error}</p>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Success Alert */}
       <AnimatePresence>
         {success && (
           <motion.div
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -10 }}
-            className="container mx-auto px-4 sm:px-6 lg:px-8 pb-4"
+            className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-4"
           >
-            <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg flex items-start gap-3">
-              <CheckCircle2 size={20} className="text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" />
-              <p className="text-green-700 dark:text-green-300">{success}</p>
+            <div className="p-4 bg-[#0fbf75]/10 border border-[#0fbf75]/20 rounded-xl flex items-start gap-3">
+              <CheckCircle2 size={20} className="text-[#00D28A] flex-shrink-0 mt-0.5" />
+              <p className="text-[#00D28A] text-sm">{success}</p>
             </div>
           </motion.div>
         )}
       </AnimatePresence>
 
       {/* Main Content Grid */}
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 pb-16">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pb-20">
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 lg:gap-8">
-          {/* Form Section - 2 columns */}
+          {/* Form Section */}
           <div className="lg:col-span-2">
             {analyzeMethod === 'sensor' && (
               <motion.form
@@ -261,211 +244,62 @@ function Analyze() {
               >
                 <Reveal>
                   <GlassPanel className="p-6 lg:p-8">
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                      Enter Sensor Readings
-                    </h2>
+                    <h2 className="text-xl font-bold text-white mb-6">Enter Sensor Readings</h2>
 
-                    <div className="space-y-6">
+                    <div className="space-y-5">
                       {/* Soil Moisture */}
                       <Reveal delay={0.05}>
-                        <motion.div
-                          animate={validationErrors.soil_moisture ? { x: [-4, 4, -2, 0] } : {}}
-                          transition={{ duration: 0.3 }}
-                        >
-                          <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
-                            Soil Moisture (%)
-                          </label>
-                          <input
-                            type="number"
-                            name="soil_moisture"
-                            min="0"
-                            max="100"
-                            step="0.1"
-                            value={sensorData.soil_moisture}
-                            onChange={handleSensorChange}
-                            placeholder="0-100"
-                            disabled={loading}
-                            className={`w-full px-4 py-3 rounded-lg border-2 transition-all bg-white dark:bg-gray-800 text-gray-900 dark:text-white ${
-                              validationErrors.soil_moisture
-                                ? 'border-red-400 dark:border-red-500 focus:ring-red-500'
-                                : 'border-gray-200 dark:border-gray-700 focus:border-primary-green focus:ring-primary-green'
-                            } focus:ring-2 focus:outline-none disabled:opacity-50`}
-                          />
-                          <div className="flex items-center justify-between mt-2">
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              Optimal: 40-60%
-                            </p>
-                            <AnimatePresence mode="wait">
-                              {validationErrors.soil_moisture && (
-                                <motion.p
-                                  initial={{ opacity: 0, x: -10 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  exit={{ opacity: 0, x: 10 }}
-                                  className="text-xs text-red-600 dark:text-red-400"
-                                >
-                                  {validationErrors.soil_moisture}
-                                </motion.p>
-                              )}
-                            </AnimatePresence>
+                        <motion.div animate={validationErrors.soil_moisture ? { x: [-4, 4, -2, 0] } : {}} transition={{ duration: 0.3 }}>
+                          <label className="block text-sm font-medium text-gray-300 mb-2">Soil Moisture (%)</label>
+                          <input type="number" name="soil_moisture" min="0" max="100" step="0.1" value={sensorData.soil_moisture} onChange={handleSensorChange} placeholder="0-100" disabled={loading} className={inputClassName('soil_moisture')} />
+                          <div className="flex items-center justify-between mt-1.5">
+                            <p className="text-xs text-gray-600">Optimal: 40-60%</p>
+                            <AnimatePresence mode="wait">{validationErrors.soil_moisture && (<motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-xs text-red-400">{validationErrors.soil_moisture}</motion.p>)}</AnimatePresence>
                           </div>
                         </motion.div>
                       </Reveal>
 
                       {/* Temperature */}
                       <Reveal delay={0.1}>
-                        <motion.div
-                          animate={validationErrors.temperature ? { x: [-4, 4, -2, 0] } : {}}
-                          transition={{ duration: 0.3 }}
-                        >
-                          <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
-                            Temperature (°C)
-                          </label>
-                          <input
-                            type="number"
-                            name="temperature"
-                            min="-50"
-                            max="50"
-                            step="0.1"
-                            value={sensorData.temperature}
-                            onChange={handleSensorChange}
-                            placeholder="-50 to 50"
-                            disabled={loading}
-                            className={`w-full px-4 py-3 rounded-lg border-2 transition-all bg-white dark:bg-gray-800 text-gray-900 dark:text-white ${
-                              validationErrors.temperature
-                                ? 'border-red-400 dark:border-red-500 focus:ring-red-500'
-                                : 'border-gray-200 dark:border-gray-700 focus:border-primary-green focus:ring-primary-green'
-                            } focus:ring-2 focus:outline-none disabled:opacity-50`}
-                          />
-                          <div className="flex items-center justify-between mt-2">
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              Optimal: 20-25°C
-                            </p>
-                            <AnimatePresence mode="wait">
-                              {validationErrors.temperature && (
-                                <motion.p
-                                  initial={{ opacity: 0, x: -10 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  exit={{ opacity: 0, x: 10 }}
-                                  className="text-xs text-red-600 dark:text-red-400"
-                                >
-                                  {validationErrors.temperature}
-                                </motion.p>
-                              )}
-                            </AnimatePresence>
+                        <motion.div animate={validationErrors.temperature ? { x: [-4, 4, -2, 0] } : {}} transition={{ duration: 0.3 }}>
+                          <label className="block text-sm font-medium text-gray-300 mb-2">Temperature (°C)</label>
+                          <input type="number" name="temperature" min="-50" max="50" step="0.1" value={sensorData.temperature} onChange={handleSensorChange} placeholder="-50 to 50" disabled={loading} className={inputClassName('temperature')} />
+                          <div className="flex items-center justify-between mt-1.5">
+                            <p className="text-xs text-gray-600">Optimal: 20-25°C</p>
+                            <AnimatePresence mode="wait">{validationErrors.temperature && (<motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-xs text-red-400">{validationErrors.temperature}</motion.p>)}</AnimatePresence>
                           </div>
                         </motion.div>
                       </Reveal>
 
                       {/* Humidity */}
                       <Reveal delay={0.15}>
-                        <motion.div
-                          animate={validationErrors.humidity ? { x: [-4, 4, -2, 0] } : {}}
-                          transition={{ duration: 0.3 }}
-                        >
-                          <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
-                            Humidity (%)
-                          </label>
-                          <input
-                            type="number"
-                            name="humidity"
-                            min="0"
-                            max="100"
-                            step="0.1"
-                            value={sensorData.humidity}
-                            onChange={handleSensorChange}
-                            placeholder="0-100"
-                            disabled={loading}
-                            className={`w-full px-4 py-3 rounded-lg border-2 transition-all bg-white dark:bg-gray-800 text-gray-900 dark:text-white ${
-                              validationErrors.humidity
-                                ? 'border-red-400 dark:border-red-500 focus:ring-red-500'
-                                : 'border-gray-200 dark:border-gray-700 focus:border-primary-green focus:ring-primary-green'
-                            } focus:ring-2 focus:outline-none disabled:opacity-50`}
-                          />
-                          <div className="flex items-center justify-between mt-2">
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              Optimal: 60-80%
-                            </p>
-                            <AnimatePresence mode="wait">
-                              {validationErrors.humidity && (
-                                <motion.p
-                                  initial={{ opacity: 0, x: -10 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  exit={{ opacity: 0, x: 10 }}
-                                  className="text-xs text-red-600 dark:text-red-400"
-                                >
-                                  {validationErrors.humidity}
-                                </motion.p>
-                              )}
-                            </AnimatePresence>
+                        <motion.div animate={validationErrors.humidity ? { x: [-4, 4, -2, 0] } : {}} transition={{ duration: 0.3 }}>
+                          <label className="block text-sm font-medium text-gray-300 mb-2">Humidity (%)</label>
+                          <input type="number" name="humidity" min="0" max="100" step="0.1" value={sensorData.humidity} onChange={handleSensorChange} placeholder="0-100" disabled={loading} className={inputClassName('humidity')} />
+                          <div className="flex items-center justify-between mt-1.5">
+                            <p className="text-xs text-gray-600">Optimal: 60-80%</p>
+                            <AnimatePresence mode="wait">{validationErrors.humidity && (<motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-xs text-red-400">{validationErrors.humidity}</motion.p>)}</AnimatePresence>
                           </div>
                         </motion.div>
                       </Reveal>
 
                       {/* Leaf Wetness */}
                       <Reveal delay={0.2}>
-                        <motion.div>
-                          <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
-                            Leaf Wetness (%)
-                          </label>
-                          <input
-                            type="number"
-                            name="leaf_wetness"
-                            min="0"
-                            max="100"
-                            step="0.1"
-                            value={sensorData.leaf_wetness}
-                            onChange={handleSensorChange}
-                            placeholder="0-100"
-                            disabled={loading}
-                            className="w-full px-4 py-3 rounded-lg border-2 border-gray-200 dark:border-gray-700 focus:border-primary-green focus:ring-2 focus:ring-primary-green focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-all disabled:opacity-50"
-                          />
-                          <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                            Indicates disease risk
-                          </p>
-                        </motion.div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-300 mb-2">Leaf Wetness (%)</label>
+                          <input type="number" name="leaf_wetness" min="0" max="100" step="0.1" value={sensorData.leaf_wetness} onChange={handleSensorChange} placeholder="0-100" disabled={loading} className={inputClassName('leaf_wetness')} />
+                          <p className="text-xs text-gray-600 mt-1.5">Indicates disease risk</p>
+                        </div>
                       </Reveal>
 
                       {/* pH Level */}
                       <Reveal delay={0.25}>
-                        <motion.div
-                          animate={validationErrors.ph_level ? { x: [-4, 4, -2, 0] } : {}}
-                          transition={{ duration: 0.3 }}
-                        >
-                          <label className="block text-sm font-semibold text-gray-900 dark:text-white mb-2">
-                            pH Level
-                          </label>
-                          <input
-                            type="number"
-                            name="ph_level"
-                            min="0"
-                            max="14"
-                            step="0.1"
-                            value={sensorData.ph_level}
-                            onChange={handleSensorChange}
-                            placeholder="0-14"
-                            disabled={loading}
-                            className={`w-full px-4 py-3 rounded-lg border-2 transition-all bg-white dark:bg-gray-800 text-gray-900 dark:text-white ${
-                              validationErrors.ph_level
-                                ? 'border-red-400 dark:border-red-500 focus:ring-red-500'
-                                : 'border-gray-200 dark:border-gray-700 focus:border-primary-green focus:ring-primary-green'
-                            } focus:ring-2 focus:outline-none disabled:opacity-50`}
-                          />
-                          <div className="flex items-center justify-between mt-2">
-                            <p className="text-xs text-gray-500 dark:text-gray-400">
-                              Optimal: 6-7
-                            </p>
-                            <AnimatePresence mode="wait">
-                              {validationErrors.ph_level && (
-                                <motion.p
-                                  initial={{ opacity: 0, x: -10 }}
-                                  animate={{ opacity: 1, x: 0 }}
-                                  exit={{ opacity: 0, x: 10 }}
-                                  className="text-xs text-red-600 dark:text-red-400"
-                                >
-                                  {validationErrors.ph_level}
-                                </motion.p>
-                              )}
-                            </AnimatePresence>
+                        <motion.div animate={validationErrors.ph_level ? { x: [-4, 4, -2, 0] } : {}} transition={{ duration: 0.3 }}>
+                          <label className="block text-sm font-medium text-gray-300 mb-2">pH Level</label>
+                          <input type="number" name="ph_level" min="0" max="14" step="0.1" value={sensorData.ph_level} onChange={handleSensorChange} placeholder="0-14" disabled={loading} className={inputClassName('ph_level')} />
+                          <div className="flex items-center justify-between mt-1.5">
+                            <p className="text-xs text-gray-600">Optimal: 6-7</p>
+                            <AnimatePresence mode="wait">{validationErrors.ph_level && (<motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="text-xs text-red-400">{validationErrors.ph_level}</motion.p>)}</AnimatePresence>
                           </div>
                         </motion.div>
                       </Reveal>
@@ -473,10 +307,7 @@ function Analyze() {
 
                     <Reveal delay={0.3}>
                       <div className="mt-8">
-                        <GradientButton
-                          onClick={handleSensorSubmit}
-                          className="w-full py-3 text-lg font-semibold flex items-center justify-center gap-2"
-                        >
+                        <GradientButton onClick={handleSensorSubmit} className="w-full py-3 text-base font-semibold flex items-center justify-center gap-2">
                           {loading ? 'Analyzing...' : 'Analyze Crop Health'}
                           <ChevronRight size={20} />
                         </GradientButton>
@@ -497,69 +328,36 @@ function Analyze() {
               >
                 <Reveal>
                   <GlassPanel className="p-6 lg:p-8">
-                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6">
-                      Upload Field Image
-                    </h2>
+                    <h2 className="text-xl font-bold text-white mb-6">Upload Field Image</h2>
 
                     <div className="mb-6">
-                      <input
-                        type="file"
-                        id="image-input"
-                        accept="image/*"
-                        onChange={handleImageSelect}
-                        disabled={loading}
-                        className="hidden"
-                      />
+                      <input type="file" id="image-input" accept="image/*" onChange={handleImageSelect} disabled={loading} className="hidden" />
                       <label
                         htmlFor="image-input"
-                        className="block p-8 border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-lg hover:border-primary-green transition-colors cursor-pointer"
+                        className="block p-8 border-2 border-dashed border-white/10 rounded-xl hover:border-[#0fbf75]/30 transition-colors cursor-pointer"
                       >
                         {imagePreview ? (
-                          <motion.div
-                            initial={{ scale: 0.95, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            className="text-center"
-                          >
-                            <img
-                              src={imagePreview}
-                              alt="Preview"
-                              className="max-h-64 mx-auto rounded-lg mb-4"
-                            />
-                            <p className="text-sm text-gray-600 dark:text-gray-400">
-                              Click to change image
-                            </p>
+                          <motion.div initial={{ scale: 0.95, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} className="text-center">
+                            <img src={imagePreview} alt="Preview" className="max-h-64 mx-auto rounded-xl mb-4" />
+                            <p className="text-sm text-gray-500">Click to change image</p>
                           </motion.div>
                         ) : (
                           <div className="text-center py-12">
-                            <motion.div
-                              animate={{ y: [-4, 4, -2, 0] }}
-                              transition={{ duration: 2, repeat: Infinity }}
-                              className="mb-4"
-                            >
-                              <Upload size={48} className="mx-auto text-gray-400" />
+                            <motion.div animate={{ y: [-4, 4, -2, 0] }} transition={{ duration: 2, repeat: Infinity }} className="mb-4">
+                              <Upload size={48} className="mx-auto text-gray-600" />
                             </motion.div>
-                            <p className="text-gray-900 dark:text-white font-semibold">
-                              Click or drag image here
-                            </p>
-                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
-                              Supported: JPG, PNG, WebP
-                            </p>
+                            <p className="text-white font-semibold">Click or drag image here</p>
+                            <p className="text-xs text-gray-600 mt-2">Supported: JPG, PNG, WebP</p>
                           </div>
                         )}
                       </label>
                     </div>
 
                     <Reveal delay={0.1}>
-                      <div>
-                        <GradientButton
-                          onClick={handleImageSubmit}
-                          className="w-full py-3 text-lg font-semibold flex items-center justify-center gap-2"
-                          disabled={loading || !imageFile}
-                        >
-                          {loading ? 'Analyzing Image...' : 'Analyze Image'}
-                          <ChevronRight size={20} />
-                        </GradientButton>
-                      </div>
+                      <GradientButton onClick={handleImageSubmit} className="w-full py-3 text-base font-semibold flex items-center justify-center gap-2" disabled={loading || !imageFile}>
+                        {loading ? 'Analyzing Image...' : 'Analyze Image'}
+                        <ChevronRight size={20} />
+                      </GradientButton>
                     </Reveal>
                   </GlassPanel>
                 </Reveal>
@@ -567,59 +365,34 @@ function Analyze() {
             )}
           </div>
 
-          {/* Sticky Results Preview - 1 column */}
+          {/* Live Preview Sidebar */}
           {liveResults && (
             <Reveal delay={0.2}>
               <motion.div
-                className="lg:sticky lg:top-8 h-fit"
+                className="lg:sticky lg:top-24 h-fit"
                 initial={{ opacity: 0, x: 32 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.42, ease: [0.22, 0.9, 0.13, 1] }}
               >
                 <GlassPanel className="p-6 lg:p-8">
-                  <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">
-                    Live Preview
-                  </h3>
+                  <h3 className="text-base font-bold text-white mb-5">Live Preview</h3>
 
-                  <motion.div
-                    initial={{ scale: 0.95 }}
-                    animate={{ scale: 1 }}
-                    className="text-center mb-6"
-                  >
-                    <div
-                      className={`inline-block px-4 py-2 rounded-full font-semibold text-white mb-3 ${
-                        liveResults.health_status === 'Healthy'
-                          ? 'bg-gradient-primary'
-                          : 'bg-red-500'
-                      }`}
-                    >
+                  <motion.div initial={{ scale: 0.95 }} animate={{ scale: 1 }} className="text-center mb-6">
+                    <div className={`inline-block px-4 py-2 rounded-full font-semibold text-sm text-white mb-3 ${liveResults.health_status === 'Healthy' ? 'bg-gradient-to-r from-[#0fbf75] to-[#00D28A]' : 'bg-red-500'
+                      }`}>
                       {liveResults.health_status}
                     </div>
-                    <p className="text-4xl font-bold text-gray-900 dark:text-white">
-                      {liveResults.confidence}%
-                    </p>
-                    <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">
-                      Confidence Score
-                    </p>
+                    <p className="text-4xl font-bold text-white">{liveResults.confidence}%</p>
+                    <p className="text-xs text-gray-500 mt-1">Confidence Score</p>
                   </motion.div>
 
-                  <div className="border-t border-white/10 pt-6">
-                    <h4 className="text-sm font-semibold text-gray-900 dark:text-white mb-3">
-                      Recommendations
-                    </h4>
+                  <div className="border-t border-white/5 pt-5">
+                    <h4 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3">Recommendations</h4>
                     <div className="space-y-2">
                       {liveResults.recommendations.map((rec, i) => (
-                        <motion.div
-                          key={i}
-                          initial={{ opacity: 0, x: -10 }}
-                          animate={{ opacity: 1, x: 0 }}
-                          transition={{ delay: i * 0.05 }}
-                          className="flex items-start gap-2"
-                        >
-                          <div className="w-1.5 h-1.5 rounded-full bg-primary-green mt-2 flex-shrink-0" />
-                          <p className="text-sm text-gray-600 dark:text-gray-300">
-                            {rec}
-                          </p>
+                        <motion.div key={i} initial={{ opacity: 0, x: -10 }} animate={{ opacity: 1, x: 0 }} transition={{ delay: i * 0.05 }} className="flex items-start gap-2">
+                          <div className="w-1.5 h-1.5 rounded-full bg-[#0fbf75] mt-2 flex-shrink-0" />
+                          <p className="text-sm text-gray-400">{rec}</p>
                         </motion.div>
                       ))}
                     </div>

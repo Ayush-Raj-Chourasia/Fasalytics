@@ -48,9 +48,9 @@ function App() {
 
   return (
     <BrowserRouter>
-      <div className="app-container">
+      <div className="bg-[#0F1724] min-h-screen flex flex-col">
         <Navigation />
-        <main className="main-content">
+        <main className="flex-1 w-full">
           <AppContent />
         </main>
         <Footer />

@@ -1,93 +1,51 @@
-.history {
-  max-width: 1200px;
-  margin: 0 auto;
-  padding: 2rem 1.5rem;
+/* Minimal CSS for History page - most styling is in Tailwind */
+
+/* Card entry animation */
+@keyframes cardEntry {
+  from {
+    opacity: 0;
+    transform: translateY(12px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
 }
 
-.history-header {
-  text-align: center;
-  margin-bottom: 2rem;
+.history-card-enter {
+  animation: cardEntry 0.4s ease-out;
 }
 
-.history-header h1 {
-  font-size: 2rem;
-  margin-bottom: 0.5rem;
+/* Sparkline chart animation */
+@keyframes sparklineGrow {
+  from {
+    opacity: 0;
+    stroke-dasharray: 100;
+    stroke-dashoffset: 100;
+  }
+  to {
+    opacity: 1;
+    stroke-dasharray: 100;
+    stroke-dashoffset: 0;
+  }
 }
 
-.history-header p {
-  color: var(--light-text);
+.sparkline-animate {
+  animation: sparklineGrow 1s ease-out;
 }
 
-.history-controls {
-  margin-bottom: 2rem;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  gap: 1rem;
+/* Filter button transitions */
+@keyframes buttonPulse {
+  0%, 100% {
+    transform: scale(1);
+  }
+  50% {
+    transform: scale(1.02);
+  }
 }
 
-.sort-select {
-  padding: 0.75rem 1rem;
-  border: 2px solid var(--border-light);
-  border-radius: 8px;
-  font-size: 1rem;
-  cursor: pointer;
-  background: var(--white);
-}
-
-.sort-select:focus {
-  outline: none;
-  border-color: var(--primary-green);
-}
-
-/* Empty State */
-.empty-state {
-  text-align: center;
-  padding: 4rem 2rem;
-  background: var(--white);
-  border-radius: 12px;
-  box-shadow: var(--shadow-md);
-}
-
-.empty-state svg {
-  color: var(--light-text);
-  margin-bottom: 1rem;
-}
-
-.empty-state h2 {
-  margin-bottom: 0.5rem;
-}
-
-.empty-state p {
-  color: var(--light-text);
-  margin-bottom: 1.5rem;
-}
-
-/* Analyses List */
-.analyses-list {
-  display: grid;
-  grid-template-columns: 1fr;
-  gap: 1.5rem;
-}
-
-.analysis-card {
-  display: grid;
-  grid-template-columns: auto 1fr auto;
-  gap: 1.5rem;
-  align-items: center;
-  background: var(--white);
-  padding: 1.5rem;
-  border-radius: 12px;
-  box-shadow: var(--shadow-md);
-  text-decoration: none;
-  color: inherit;
-  transition: all var(--transition-normal);
-  border-left: 4px solid transparent;
-}
-
-.analysis-card:hover {
-  transform: translateX(5px);
-  box-shadow: var(--shadow-lg);
+.filter-active-pulse {
+  animation: buttonPulse 0.3s ease-out;
 }
 
 .analysis-card.healthy {
