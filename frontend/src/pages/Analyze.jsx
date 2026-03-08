@@ -94,10 +94,7 @@ function Analyze() {
       setSuccess('Analysis submitted successfully!')
       setTimeout(() => navigate(`/results/${response.data.id}`), 1500)
     } catch (err) {
-      // Backend unavailable — use demo result
-      console.warn('API unavailable, using demo analysis result')
-      setSuccess('Analysis completed successfully!')
-      setTimeout(() => navigate(`/results/demo`), 1500)
+      setError(err.response?.data?.message || 'Analysis failed. Could not reach the server. Please try again.')
     } finally {
       setLoading(false)
     }
@@ -124,10 +121,7 @@ function Analyze() {
       setSuccess('Image analysis submitted successfully!')
       setTimeout(() => navigate(`/results/${response.data.id}`), 1500)
     } catch (err) {
-      // Backend unavailable — use demo result
-      console.warn('API unavailable, using demo image analysis result')
-      setSuccess('Image analysis completed successfully!')
-      setTimeout(() => navigate(`/results/demo`), 1500)
+      setError(err.response?.data?.message || 'Analysis failed. Could not reach the server. Please try again.')
     } finally {
       setLoading(false)
     }

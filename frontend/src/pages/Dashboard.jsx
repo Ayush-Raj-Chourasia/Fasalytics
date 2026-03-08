@@ -27,30 +27,17 @@ function Dashboard() {
   }
 
   const data = dashboardData || {
-    total_analyses: 2458,
-    healthy_count: 1890,
-    stressed_count: 568,
-    healthy_percentage: 70,
-    stressed_percentage: 30,
-    avg_confidence: 96.4,
-    trend_data: [
-      { name: 'Mon', healthy: 72, stressed: 18 },
-      { name: 'Tue', healthy: 65, stressed: 22 },
-      { name: 'Wed', healthy: 80, stressed: 12 },
-      { name: 'Thu', healthy: 55, stressed: 28 },
-      { name: 'Fri', healthy: 78, stressed: 15 },
-      { name: 'Sat', healthy: 88, stressed: 8 },
-      { name: 'Sun', healthy: 82, stressed: 14 },
-    ],
+    total_analyses: 0,
+    healthy_count: 0,
+    stressed_count: 0,
+    healthy_percentage: 0,
+    stressed_percentage: 0,
+    avg_confidence: 0,
+    trend_data: [],
     recent_analyses: []
   }
 
-  const mockRecent = data.recent_analyses?.length > 0 ? data.recent_analyses : [
-    { id: 1, farm_name: 'Sunnyvale Orchard', date: 'Oct 24, 2023', time: '10:42 AM', crop: 'Wheat (Winter)', confidence: 98, status: 'healthy', icon: 'terrain', iconBg: 'bg-blue-900/30', iconColor: 'text-blue-400' },
-    { id: 2, farm_name: 'Green Valley Block A', date: 'Oct 23, 2023', time: '04:15 PM', crop: 'Soybean', confidence: 88, status: 'stressed', icon: 'grass', iconBg: 'bg-purple-900/30', iconColor: 'text-purple-400' },
-    { id: 3, farm_name: 'Highland Fields', date: 'Oct 23, 2023', time: '09:30 AM', crop: 'Corn (Maize)', confidence: 92, status: 'healthy', icon: 'landscape', iconBg: 'bg-orange-900/30', iconColor: 'text-orange-400' },
-    { id: 4, farm_name: 'Riverbank Plot 4', date: 'Oct 22, 2023', time: '02:10 PM', crop: 'Rice', confidence: 95, status: 'warning', icon: 'eco', iconBg: 'bg-teal-900/30', iconColor: 'text-teal-400' },
-  ]
+  const mockRecent = data.recent_analyses || []
 
   const pieData = [
     { name: 'Healthy', value: data.healthy_count, fill: '#10b981' },

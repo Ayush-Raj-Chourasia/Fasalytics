@@ -16,6 +16,7 @@ function Results() {
   const { id } = useParams()
   const [result, setResult] = useState(null)
   const [loading, setLoading] = useState(true)
+  const [fetchError, setFetchError] = useState(null)
 
   useEffect(() => { fetchResults() }, [id])
 
@@ -24,30 +25,13 @@ function Results() {
       const response = await api.getResults(id)
       setResult(response.data)
     } catch (err) {
-      // API not available — silently fall back to demo data
-      console.warn('Results API not available, using demo data')
+      setFetchError('Could not load analysis results. The record may not exist or the server is unavailable.')
     } finally {
       setLoading(false)
     }
   }
 
-  const data = result || {
-    farm_name: 'Sunnyvale Orchard',
-    crop_type: 'Wheat (Winter)',
-    prediction_status: 'healthy',
-    confidence: 94.2,
-    timestamp: new Date().toISOString(),
-    soil_moisture: 52,
-    temperature: 22.5,
-    humidity: 68,
-    ph_level: 6.5,
-    leaf_wetness: 15,
-    recommendations: [
-      { priority: 'high', title: 'Continue Current Irrigation', description: 'Soil moisture at optimal levels (52%). Maintain watering schedule.' },
-      { priority: 'medium', title: 'Monitor East Zone', description: 'Slight stress indicators detected — increase inspection frequency.' },
-      { priority: 'low', title: 'Apply Season Fertilizer', description: 'Schedule next round of nitrogen-based fertilizer application within 7 days.' },
-    ]
-  }
+  const data = result || {}
 
   const isHealthy = data.prediction_status === 'healthy'
 
@@ -85,6 +69,17 @@ function Results() {
       <div className="flex flex-col items-center gap-3">
         <div className="w-10 h-10 border-3 border-emerald-500/30 border-t-emerald-500 rounded-full animate-spin" />
         <p className="text-[#8faeb0] text-sm">Loading results...</p>
+      </div>
+    </div>
+  )
+
+  if (fetchError) return (
+    <div className="h-full flex items-center justify-center" style={{ minHeight: '60vh' }}>
+      <div className="flex flex-col items-center gap-4 text-center max-w-md px-6">
+        <span className="material-icons-round text-5xl text-red-400">error_outline</span>
+        <h2 className="text-white text-xl font-semibold">Results Not Found</h2>
+        <p className="text-[#8faeb0] text-sm">{fetchError}</p>
+        <button onClick={() => navigate('/analyze')} className="btn-primary mt-2">Run New Analysis</button>
       </div>
     </div>
   )

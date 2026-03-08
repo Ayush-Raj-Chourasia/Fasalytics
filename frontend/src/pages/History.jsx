@@ -18,26 +18,16 @@ function History() {
   const fetchHistory = async () => {
     try {
       const response = await api.getHistory()
-      setAnalyses(response.data || [])
+      setAnalyses(response.data?.results || response.data || [])
     } catch (err) {
-      // Backend unavailable — silently use demo data
-      console.warn('History API not available, using demo data')
+      setError('Could not load history. Please try again later.')
     } finally {
       setLoading(false)
     }
   }
 
-  const mockAnalyses = analyses.length > 0 ? analyses : [
-    { id: 1, timestamp: new Date(Date.now() - 86400000).toISOString(), prediction_status: 'healthy', confidence: 94.2, crop_type: 'Wheat', field_name: 'Sunnyvale Orchard', confidence_trend: [85, 88, 90, 91, 93, 94.2] },
-    { id: 2, timestamp: new Date(Date.now() - 172800000).toISOString(), prediction_status: 'stressed', confidence: 87.5, crop_type: 'Corn', field_name: 'Green Valley Block A', confidence_trend: [92, 90, 89, 88, 87.5, 87] },
-    { id: 3, timestamp: new Date(Date.now() - 259200000).toISOString(), prediction_status: 'healthy', confidence: 91.3, crop_type: 'Soybean', field_name: 'Highland Fields', confidence_trend: [82, 85, 87, 89, 90, 91.3] },
-    { id: 4, timestamp: new Date(Date.now() - 345600000).toISOString(), prediction_status: 'healthy', confidence: 89.8, crop_type: 'Rice', field_name: 'Riverbank Plot 4', confidence_trend: [78, 82, 85, 87, 88, 89.8] },
-    { id: 5, timestamp: new Date(Date.now() - 432000000).toISOString(), prediction_status: 'stressed', confidence: 76.4, crop_type: 'Wheat', field_name: 'North Ridge Field', confidence_trend: [88, 85, 82, 80, 78, 76.4] },
-    { id: 6, timestamp: new Date(Date.now() - 518400000).toISOString(), prediction_status: 'healthy', confidence: 95.1, crop_type: 'Corn', field_name: 'Valley Bottom', confidence_trend: [90, 91, 92, 93, 94, 95.1] },
-  ]
-
-  let filteredAnalyses = mockAnalyses
-  if (filterStatus !== 'all') filteredAnalyses = mockAnalyses.filter(a => a.prediction_status === filterStatus)
+  let filteredAnalyses = analyses
+  if (filterStatus !== 'all') filteredAnalyses = analyses.filter(a => a.prediction_status === filterStatus)
   if (selectedCrops.length > 0) filteredAnalyses = filteredAnalyses.filter(a => selectedCrops.includes(a.crop_type))
 
   const sortedAnalyses = [...filteredAnalyses].sort((a, b) => {
@@ -46,7 +36,7 @@ function History() {
     return 0
   })
 
-  const cropTypes = [...new Set(mockAnalyses.map(a => a.crop_type))]
+  const cropTypes = [...new Set(analyses.map(a => a.crop_type))]
   const toggleCrop = (crop) => {
     setSelectedCrops(prev => prev.includes(crop) ? prev.filter(c => c !== crop) : [...prev, crop])
   }
@@ -63,16 +53,16 @@ function History() {
   const formatTime = (dateString) => new Date(dateString).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })
 
   // Group by date
-  const groupedByDate = sortedAnalyses.reduce((groups, analysis) => {
+  const groupedByDate = (sortedAnalyses || []).reduce((groups, analysis) => {
     const dateKey = formatDate(analysis.timestamp)
     if (!groups[dateKey]) groups[dateKey] = []
     groups[dateKey].push(analysis)
     return groups
   }, {})
 
-  const totalHealthy = mockAnalyses.filter(a => a.prediction_status === 'healthy').length
-  const totalStressed = mockAnalyses.filter(a => a.prediction_status === 'stressed').length
-  const avgConfidence = (mockAnalyses.reduce((sum, a) => sum + a.confidence, 0) / mockAnalyses.length).toFixed(1)
+  const totalHealthy = analyses.filter(a => a.prediction_status === 'healthy').length
+  const totalStressed = analyses.filter(a => a.prediction_status === 'stressed').length
+  const avgConfidence = analyses.length > 0 ? (analyses.reduce((sum, a) => sum + a.confidence, 0) / analyses.length).toFixed(1) : '0.0'
 
   if (loading) return (
     <div className="h-full flex items-center justify-center">
