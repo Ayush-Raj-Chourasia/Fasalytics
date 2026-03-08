@@ -21,7 +21,11 @@ jobs:
         run: |
           zip -r deploy.zip . \
             -x "venv/*" ".venv/*" "node_modules/*" "frontend/node_modules/*" \
-            ".git/*" ".github/*" "__pycache__/*" "*.pyc"
+            ".git/*" ".github/*" "__pycache__/*" "*.pyc" \
+            "frontend/src/*" "frontend/public/*" "docs/*" \
+            "stitch_analysis_results_detail_report*" "tests/*" \
+            "*.md"
+          ls -lh deploy.zip
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
@@ -29,3 +33,4 @@ jobs:
           app-name: ${{ secrets.AZURE_WEBAPP_NAME }}
           publish-profile: ${{ secrets.AZUREAPPSERVICE_PUBLISHPROFILE }}
           package: deploy.zip
+          type: zip
