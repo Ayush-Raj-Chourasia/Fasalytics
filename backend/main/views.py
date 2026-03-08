@@ -40,7 +40,7 @@ def get_csrf_token(request):
 @require_http_methods(["POST", "OPTIONS"])
 @csrf_exempt
 def analyze_crop_api(request):
-    """Handle crop health analysis - API endpoint for React"""
+    """Handle crop health analysis - API endpoint for React. Code version: 2026-03-09"""
     if request.method == 'OPTIONS':
         return JsonResponse({'status': 'ok'}, status=200)
     try:
