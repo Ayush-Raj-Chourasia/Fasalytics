@@ -39,6 +39,26 @@ app.add_middleware(
 
 MODEL = None
 DEVICE = None
+DISEASE_CLASSIFIER = None
+
+# PlantVillage crops recognised by the pretrained classifier
+VALID_CROPS = {
+    "Apple", "Blueberry", "Cherry", "Corn", "Grape", "Orange",
+    "Peach", "Pepper", "Potato", "Raspberry", "Soybean",
+    "Squash", "Strawberry", "Tomato",
+}
+
+# Rough 0-4 severity for each PlantVillage disease label fragment
+DISEASE_SEVERITY_MAP = {
+    "healthy": 0,
+    "Powdery_mildew": 2, "Bacterial_spot": 2, "Leaf_scorch": 2,
+    "Early_blight": 2, "Cercospora": 2, "Spider_mites": 2,
+    "Leaf_Mold": 2, "Septoria_leaf_spot": 2, "Apple_scab": 2,
+    "Target_Spot": 3, "Common_rust_": 3, "Northern_Leaf_Blight": 3,
+    "Black_rot": 3, "Esca": 3, "Leaf_blight": 3, "Cedar_apple_rust": 3,
+    "Tomato_mosaic_virus": 3,
+    "Late_blight": 4, "Haunglongbing": 4, "Tomato_Yellow_Leaf_Curl_Virus": 4,
+}
 
 def load_model():
     global MODEL, DEVICE
@@ -67,11 +87,25 @@ def load_model():
         m.to(DEVICE)
         m.eval()
         MODEL = m
-        print("Model loaded successfully.")
-        return True
+        print("CNN-LSTM model loaded successfully.")
     except Exception as e:
-        print(f"Model load failed: {e}")
-        return False
+        print(f"CNN-LSTM model load failed: {e}")
+
+    # --- Load pretrained PlantVillage disease classifier ---
+    global DISEASE_CLASSIFIER
+    try:
+        from transformers import pipeline as hf_pipeline
+        print("Loading PlantVillage disease classifier (MobileNetV2)...")
+        DISEASE_CLASSIFIER = hf_pipeline(
+            "image-classification",
+            model="linkanjarad/mobilenet_v2_1.0_224-plant-disease-identification",
+            device=-1,  # CPU
+        )
+        print("Disease classifier loaded successfully.")
+    except Exception as e:
+        print(f"Disease classifier load failed: {e}")
+
+    return MODEL is not None
 
 
 # ---------------------------------------------------------------------------
@@ -222,101 +256,172 @@ def generate_zone_map(status: str):
 
 
 # ---------------------------------------------------------------------------
-# Image validation + feature extraction
+# Pretrained plant disease classifier (PlantVillage MobileNetV2)
 # ---------------------------------------------------------------------------
 
-def analyze_crop_image_pixels(image_bytes: bytes):
+def _get_disease_severity(condition: str) -> int:
+    """Return 0 (healthy) – 4 (critical) severity for a PlantVillage condition label."""
+    if condition.lower() == "healthy":
+        return 0
+    for fragment, sev in DISEASE_SEVERITY_MAP.items():
+        if fragment in condition:
+            return sev
+    return 2  # default: moderate
+
+
+def _disease_recommendation(crop: str, condition: str, severity: int) -> str:
+    """Return a crop/disease-specific agronomic recommendation."""
+    raw = condition.replace("_", " ")
+    if severity == 0:
+        return f"{crop} crop is healthy. Continue current management practices and monitor regularly."
+    sev_label = ["Mild", "Mild", "Moderate", "Severe", "Critical"][min(severity, 4)]
+    recs = {
+        "blight":   "Apply copper-based fungicide. Remove and destroy infected plant material.",
+        "rust":     "Apply systemic fungicide (e.g. triazole group). Improve air circulation.",
+        "mildew":   "Apply sulphur or potassium bicarbonate fungicide. Reduce leaf wetness.",
+        "mold":     "Improve canopy ventilation. Apply mancozeb-based fungicide.",
+        "rot":      "Remove infected material immediately. Apply Bordeaux mixture.",
+        "spot":     "Apply chlorothalonil or copper fungicide. Avoid overhead irrigation.",
+        "mosaic":   "No cure — remove infected plants to prevent spread. Control aphid vectors.",
+        "curl":     "Control whitefly vectors. Remove infected plants. Use virus-free seedlings.",
+        "scab":     "Apply captan or myclobutanil fungicide at bud break and early season.",
+        "scorch":   "Improve irrigation consistency. Check for root diseases or nutrient deficiency.",
+        "greening": "No cure — remove infected tree. Use certified disease-free planting material.",
+        "mite":     "Apply miticide (e.g. abamectin). Increase humidity; avoid dusty conditions.",
+        "measles":  "No effective treatment. Remove severely infected vines. Improve nutrition.",
+    }
+    action = "Consult local agricultural extension service for disease management options."
+    raw_lower = raw.lower()
+    for keyword, advice in recs.items():
+        if keyword in raw_lower:
+            action = advice
+            break
+    return f"{sev_label} {raw} detected on {crop}. {action}"
+
+
+def _disease_stress_reason(crop: str, condition: str, severity: int) -> str:
+    if severity == 0:
+        return f"{crop} — no stress detected"
+    raw = condition.replace("_", " ")
+    sev_label = ["Mild", "Mild", "Moderate", "Severe", "Critical"][min(severity, 4)]
+    return f"{sev_label} {raw} on {crop}"
+
+
+def classify_plant_disease(image_bytes: bytes):
     """
-    Validate that the uploaded file is a crop/plant image and extract
-    visual proxy features to feed into the CNN-LSTM model.
+    Identify crop species and disease using the pretrained PlantVillage
+    MobileNetV2 classifier (DISEASE_CLASSIFIER).
+    Falls back to green-pixel heuristics when the model is not yet loaded.
 
     Returns:
-        (is_valid: bool, error_msg: str | None, sensor_proxy: SensorData, visual_findings: list[str])
+        (is_valid, error_msg, crop, condition, conf_pct, visual_findings, proxy_sensors)
     """
     from PIL import Image
+    img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
 
-    img = Image.open(io.BytesIO(image_bytes)).convert('RGB')
-    img = img.resize((224, 224))
-    pixels = list(img.getdata())
-    total = len(pixels)
+    # ── Pretrained path ───────────────────────────────────────────────────────
+    if DISEASE_CLASSIFIER is not None:
+        try:
+            results = DISEASE_CLASSIFIER(img, top_k=3)
+            top    = results[0]
+            label  = top["label"]   # e.g. "Tomato___Early_blight"
+            score  = top["score"]   # 0-1
 
-    green_count = yellow_count = rust_count = brown_count = 0
-    r_total = g_total = b_total = 0
+            # Parse crop and condition
+            if "___" in label:
+                crop_raw, condition = label.split("___", 1)
+            else:
+                crop_raw, condition = label, "unknown"
 
-    for r, g, b in pixels:
-        r_total += r
-        g_total += g
-        b_total += b
-        # Green vegetation: green channel dominates and not too dark
-        if g > r and g > b and g > 50:
-            green_count += 1
-        # Yellow (chlorosis / early disease: high R+G, low B)
-        if r > 150 and g > 150 and b < 100:
-            yellow_count += 1
-        # Orange / rust lesions (wheat rust, bean rust: high R, mid G, low B)
-        if r > 180 and 80 < g < 160 and b < 80:
-            rust_count += 1
-        # Brown necrosis (high R > G, low B)
-        if r > 100 and 50 < g < 130 and b < 80 and r > g:
-            brown_count += 1
+            # Normalise: drop trailing parenthetical variants & commas
+            crop = crop_raw.split("(")[0].strip().split(",")[0].strip()
 
-    green_ratio  = green_count  / total
-    yellow_ratio = yellow_count / total
-    rust_ratio   = rust_count   / total
-    brown_ratio  = brown_count  / total
-    avg_brightness = (r_total + g_total + b_total) / (total * 3 * 255)
+            # Reject if not a recognised agricultural crop
+            if crop not in VALID_CROPS:
+                return (
+                    False,
+                    "This image does not appear to contain a recognisable agricultural crop. "
+                    "Please upload a photo of a crop leaf or field.",
+                    None, None, 0.0, [], None,
+                )
 
-    # ── Crop validation ─────────────────────────────────────────────────────
+            # Reject very low-confidence predictions (likely not a plant)
+            if score < 0.20:
+                return (
+                    False,
+                    "Crop is not clearly visible in the image. "
+                    "Please upload a closer, well-lit photo.",
+                    None, None, 0.0, [], None,
+                )
+
+            severity   = _get_disease_severity(condition)
+            is_healthy = condition.lower() == "healthy"
+
+            # Map severity → proxy sensor values for CNN-LSTM
+            if is_healthy:
+                proxy = SensorData(
+                    soil_moisture=68.0, temperature=26.0,
+                    humidity=58.0, leaf_wetness=0.18, ph_level=6.5,
+                )
+            else:
+                sm  = max(22.0, 68.0 - severity * 11)
+                hum = min(88.0, 55.0 + severity * 8)
+                lw  = min(0.90,  0.20 + severity * 0.16)
+                proxy = SensorData(
+                    soil_moisture=sm, temperature=28.0,
+                    humidity=hum, leaf_wetness=lw, ph_level=6.5,
+                )
+
+            # Human-readable findings
+            top3_labels = [
+                f"{r['label'].split('___')[-1].replace('_', ' ')} ({r['score']*100:.1f}%)"
+                for r in results
+            ]
+            raw_condition = condition.replace("_", " ")
+            if is_healthy:
+                findings = [
+                    f"Crop identified: {crop} — condition: Healthy (confidence {score*100:.1f}%)",
+                    f"No disease detected. Top predictions: {', '.join(top3_labels)}",
+                ]
+            else:
+                sev_word = ["Mild", "Mild", "Moderate", "Severe", "Critical"][min(severity, 4)]
+                findings = [
+                    f"Crop identified: {crop} — disease: {raw_condition} ({sev_word}, confidence {score*100:.1f}%)",
+                    f"Top 3 predictions: {', '.join(top3_labels)}",
+                ]
+
+            return True, None, crop, condition, float(score * 100), findings, proxy
+
+        except Exception as exc:
+            print(f"Disease classifier inference error: {exc}. Falling back to pixel analysis.")
+
+    # ── Pixel-counting fallback (model not yet loaded) ─────────────────────
+    img_small = img.resize((224, 224))
+    pixels = list(img_small.getdata())
+    total  = len(pixels)
+    green_count = sum(1 for r, g, b in pixels if g > r and g > b and g > 50)
+    green_ratio = green_count / total
+
     if green_ratio < 0.05:
         return (
             False,
             "This image does not appear to contain crop or plant material. "
             "Please upload a clear field photo, crop leaf close-up, or plant stem image.",
-            None,
-            []
+            None, None, 0.0, [], None,
         )
-
-    # ── Map visual features to proxy sensor values ───────────────────────────
-    soil_moisture = round(20 + green_ratio * 80, 1)          # 20–100 %
-    humidity      = round(40 + avg_brightness * 45, 1)        # 40–85 %
-    temperature   = 25.0
-    leaf_wetness  = round(
-        max(0.0, min(1.0, 0.2 + green_ratio * 0.5 - (yellow_ratio + rust_ratio) * 0.3)), 2
-    )
-    ph_level      = 6.5
 
     proxy = SensorData(
-        soil_moisture=soil_moisture,
-        temperature=temperature,
-        humidity=humidity,
-        leaf_wetness=leaf_wetness,
-        ph_level=ph_level,
+        soil_moisture=round(20 + green_ratio * 80, 1),
+        temperature=25.0,
+        humidity=round(40 + green_ratio * 45, 1),
+        leaf_wetness=round(min(1.0, 0.2 + green_ratio * 0.4), 2),
+        ph_level=6.5,
     )
-
-    # ── Build human-readable visual findings ─────────────────────────────────
-    findings = []
-    if rust_ratio > 0.02:
-        findings.append(
-            f"Orange/rust-coloured lesions detected ({rust_ratio*100:.1f}% of image) — "
-            f"possible rust disease (e.g. wheat stripe rust, bean rust)."
-        )
-    if yellow_ratio > 0.05:
-        findings.append(
-            f"Yellow discolouration detected ({yellow_ratio*100:.1f}%) — "
-            f"possible chlorosis, early blight, or nutrient deficiency."
-        )
-    if brown_ratio > 0.05:
-        findings.append(
-            f"Brown/necrotic areas detected ({brown_ratio*100:.1f}%) — "
-            f"possible tissue damage, drought stress, or late-stage disease."
-        )
-    if not findings:
-        findings.append(
-            f"Foliage is predominantly green ({green_ratio*100:.1f}%) — "
-            f"no obvious visible disease markers detected."
-        )
-
-    return True, None, proxy, findings
+    findings = [
+        f"Vegetation coverage ~{green_ratio*100:.1f}% (disease classifier loading — "
+        f"preliminary pixel analysis only)."
+    ]
+    return True, None, "Unknown", "unknown", 50.0, findings, proxy
 
 
 # ---------------------------------------------------------------------------
@@ -357,54 +462,62 @@ def predict(data: SensorData):
 @app.post("/predict_image")
 async def predict_image(file: UploadFile = File(...)):
     """
-    Accept a crop image, validate it, run the CNN-LSTM model on
-    pixel-derived proxy sensor values, and return the full prediction.
-    The crop validation check (green pixel ratio) is done here so the
-    Django backend does not need any local image intelligence.
+    Accept a crop image, identify the crop species and disease using the
+    pretrained PlantVillage MobileNetV2 classifier, then run the CNN-LSTM
+    on proxy sensor values derived from disease severity to generate the
+    zone map and probabilistic output.
     """
     try:
         image_bytes = await file.read()
     except Exception:
         raise HTTPException(status_code=400, detail="Could not read uploaded file.")
 
-    # ── Validate + extract proxy features ──────────────────────────────────
+    # ── Identify crop + disease ─────────────────────────────────────────────
     try:
-        is_valid, error_msg, proxy, visual_findings = analyze_crop_image_pixels(image_bytes)
+        is_valid, error_msg, crop, condition, vis_conf, visual_findings, proxy = \
+            classify_plant_disease(image_bytes)
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Image processing error: {e}")
 
     if not is_valid:
         raise HTTPException(status_code=422, detail=error_msg)
 
-    # ── Run the model on proxy sensor values ──────────────────────────────
+    severity = _get_disease_severity(condition) if condition else 2
+
+    # ── CNN-LSTM inference on proxy sensor values (zone map + probabilities) ─
     try:
         if MODEL is not None:
             status, confidence, healthy_prob, stressed_prob = pytorch_predict(proxy)
-            method = "pytorch_image"
+            method = "mobilenet_v2_plantvillage+cnn_lstm"
         else:
             status, confidence, healthy_prob, stressed_prob = rule_based_predict(proxy)
-            method = "rule_based_image"
+            method = "mobilenet_v2_plantvillage+rule_based"
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Model inference error: {e}")
 
-    # ── Build recommendation with visual context prepended ─────────────────
-    base_recommendation = generate_recommendation(proxy, status)
-    visual_prefix = " | ".join(visual_findings)
-    full_recommendation = (
-        f"[Image Analysis] {visual_prefix} | {base_recommendation}"
-        if visual_prefix else base_recommendation
-    )
+    # ── Override status from disease classifier when confidence is high ──────
+    # If the pretrained model is very confident, trust it over the CNN-LSTM proxy.
+    if DISEASE_CLASSIFIER is not None and vis_conf >= 40.0:
+        is_healthy_by_vision = (condition or "").lower() == "healthy"
+        status     = "healthy" if is_healthy_by_vision else "stressed"
+        confidence = vis_conf
+
+    crop_label = crop or "Unknown"
+    recommendation = _disease_recommendation(crop_label, condition or "unknown", severity)
+    stress_reason  = _disease_stress_reason(crop_label, condition or "unknown", severity)
 
     return {
-        "status":         status,
-        "confidence":     confidence,
-        "recommendation": full_recommendation,
-        "stress_reason":  get_stress_reason(proxy),
-        "zone_map":       generate_zone_map(status),
-        "probabilities":  {"healthy": healthy_prob, "stressed": stressed_prob},
-        "method":         method,
+        "status":          status,
+        "confidence":      confidence,
+        "recommendation":  recommendation,
+        "stress_reason":   stress_reason,
+        "zone_map":        generate_zone_map(status),
+        "probabilities":   {"healthy": healthy_prob, "stressed": stressed_prob},
+        "method":          method,
+        "crop":            crop_label,
+        "condition":       (condition or "unknown").replace("_", " "),
         "visual_findings": visual_findings,
-        "proxy_sensors":  {
+        "proxy_sensors": {
             "soil_moisture": proxy.soil_moisture,
             "temperature":   proxy.temperature,
             "humidity":      proxy.humidity,
