@@ -228,7 +228,7 @@ function Results() {
                 AI Recommendations
               </h3>
               <div className="space-y-3">
-                {data.recommendations.map((rec, i) => {
+                {(data.recommendations || []).map((rec, i) => {
                   const ps = priorityStyles[rec.priority]
                   return (
                     <motion.div

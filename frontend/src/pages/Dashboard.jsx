@@ -258,21 +258,23 @@ function Dashboard() {
                 </tr>
               </thead>
               <tbody className="divide-y divide-white/5">
-                {mockRecent.map((row) => (
+                {mockRecent.length === 0 ? (
+                  <tr><td colSpan={6} className="px-6 py-10 text-center text-sm text-[#8faeb0]">No analyses yet. <button onClick={() => navigate('/analyze')} className="text-emerald-400 hover:underline">Run your first analysis</button></td></tr>
+                ) : mockRecent.map((row) => (
                   <tr key={row.id} className="hover:bg-white/[0.03] transition-colors group">
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-3">
-                        <div className={`w-9 h-9 rounded-lg ${row.iconBg} flex items-center justify-center ${row.iconColor}`}>
-                          <span className="material-icons-round text-sm">{row.icon}</span>
+                        <div className="w-9 h-9 rounded-lg bg-emerald-900/30 flex items-center justify-center text-emerald-400">
+                          <span className="material-icons-round text-sm">terrain</span>
                         </div>
                         <span className="font-medium text-gray-200 text-sm">{row.farm_name}</span>
                       </div>
                     </td>
                     <td className="px-6 py-4">
-                      <span className="text-sm text-gray-300">{row.date}</span>
-                      <span className="text-xs text-gray-500 ml-1.5">{row.time}</span>
+                      <span className="text-sm text-gray-300">{row.date || new Date(row.timestamp).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}</span>
+                      <span className="text-xs text-gray-500 ml-1.5">{row.time || new Date(row.timestamp).toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' })}</span>
                     </td>
-                    <td className="px-6 py-4 text-sm text-gray-300">{row.crop}</td>
+                    <td className="px-6 py-4 text-sm text-gray-300">{row.crop || row.crop_type}</td>
                     <td className="px-6 py-4">
                       <div className="flex items-center gap-2">
                         <div className="w-16 h-1.5 bg-gray-700 rounded-full overflow-hidden">
