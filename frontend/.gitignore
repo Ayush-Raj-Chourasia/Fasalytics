@@ -21,3 +21,5 @@ pnpm-debug.log
 # Runtime
 .cache
 .parcel-cache
+.vercel
+.env*.local
