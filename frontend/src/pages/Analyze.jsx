@@ -13,7 +13,7 @@ function Analyze() {
   const [success, setSuccess] = useState(null)
   const [validationErrors, setValidationErrors] = useState({})
 
-  // Farm details
+  // Farm details — kept at component top level so inputs never unmount
   const [farmName, setFarmName] = useState('')
   const [cropType, setCropType] = useState('')
 
@@ -27,6 +27,16 @@ function Analyze() {
 
   const [imageFile, setImageFile] = useState(null)
   const [imagePreview, setImagePreview] = useState(null)
+
+  const handleFarmNameChange = (e) => {
+    setFarmName(e.target.value)
+    if (validationErrors.farm_name) setValidationErrors(prev => ({ ...prev, farm_name: null }))
+  }
+
+  const handleCropTypeChange = (e) => {
+    setCropType(e.target.value)
+    if (validationErrors.crop_type) setValidationErrors(prev => ({ ...prev, crop_type: null }))
+  }
 
   const handleSensorChange = (e) => {
     const { name, value } = e.target
@@ -88,7 +98,7 @@ function Analyze() {
         soil_moisture: parseFloat(sensorData.soil_moisture),
         temperature: parseFloat(sensorData.temperature),
         humidity: parseFloat(sensorData.humidity),
-        leaf_wetness: parseFloat(sensorData.leaf_wetness),
+        leaf_wetness: parseFloat(sensorData.leaf_wetness) || 0,
         ph_level: parseFloat(sensorData.ph_level)
       })
       setSuccess('Analysis submitted successfully!')
@@ -146,8 +156,8 @@ function Analyze() {
     return Math.min(100, Math.max(0, ((v - field.min) / (field.max - field.min)) * 100))
   }
 
-  // Common farm details section
-  const FarmDetailsSection = () => (
+  // Farm detail fields — rendered inline (NOT as a sub-component) to prevent focus loss
+  const farmDetailFields = (
     <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 pb-6 border-b border-white/5">
       <div>
         <label className="flex items-center gap-2 text-sm font-medium text-gray-300 mb-2">
@@ -157,11 +167,10 @@ function Analyze() {
         <input
           type="text"
           value={farmName}
-          onChange={(e) => { setFarmName(e.target.value); if (validationErrors.farm_name) setValidationErrors(prev => ({ ...prev, farm_name: null })) }}
+          onChange={handleFarmNameChange}
           placeholder="e.g. Sunnyvale Orchard"
           disabled={loading}
-          className={`w-full px-4 py-3 rounded-lg border bg-[#071f15] text-white placeholder-gray-600 transition-all focus:ring-2 focus:outline-none disabled:opacity-50 ${validationErrors.farm_name ? 'border-red-500/50 focus:ring-red-500/30' : 'border-white/10 focus:border-emerald-500/50 focus:ring-emerald-500/20'
-            }`}
+          className={`w-full px-4 py-3 rounded-lg border bg-[#071f15] text-white placeholder-gray-600 transition-all focus:ring-2 focus:outline-none disabled:opacity-50 ${validationErrors.farm_name ? 'border-red-500/50 focus:ring-red-500/30' : 'border-white/10 focus:border-emerald-500/50 focus:ring-emerald-500/20'}`}
         />
         {validationErrors.farm_name && <p className="text-xs text-red-400 mt-1">{validationErrors.farm_name}</p>}
       </div>
@@ -172,10 +181,9 @@ function Analyze() {
         </label>
         <select
           value={cropType}
-          onChange={(e) => { setCropType(e.target.value); if (validationErrors.crop_type) setValidationErrors(prev => ({ ...prev, crop_type: null })) }}
+          onChange={handleCropTypeChange}
           disabled={loading}
-          className={`select-styled w-full py-3 ${validationErrors.crop_type ? 'border-red-500/50' : ''
-            }`}
+          className={`select-styled w-full py-3 ${validationErrors.crop_type ? 'border-red-500/50' : ''}`}
         >
           <option value="">Select crop type...</option>
           {cropTypes.map(c => <option key={c} value={c}>{c}</option>)}
@@ -250,7 +258,7 @@ function Analyze() {
                 </div>
 
                 <form onSubmit={handleSensorSubmit} className="space-y-5">
-                  <FarmDetailsSection />
+                  {farmDetailFields}
 
                   {sensorFields.map((field, i) => (
                     <motion.div
@@ -278,8 +286,7 @@ function Analyze() {
                             onChange={handleSensorChange}
                             placeholder={`${field.min}${field.unit} – ${field.max}${field.unit}`}
                             disabled={loading}
-                            className={`w-full px-4 py-3 rounded-lg border bg-[#071f15] text-white placeholder-gray-600 transition-all focus:ring-2 focus:outline-none disabled:opacity-50 ${validationErrors[field.name] ? 'border-red-500/50 focus:ring-red-500/30' : 'border-white/10 focus:border-emerald-500/50 focus:ring-emerald-500/20'
-                              }`}
+                            className={`w-full px-4 py-3 rounded-lg border bg-[#071f15] text-white placeholder-gray-600 transition-all focus:ring-2 focus:outline-none disabled:opacity-50 ${validationErrors[field.name] ? 'border-red-500/50 focus:ring-red-500/30' : 'border-white/10 focus:border-emerald-500/50 focus:ring-emerald-500/20'}`}
                           />
                           {field.unit && <span className="absolute right-3 top-1/2 -translate-y-1/2 text-xs text-[#8faeb0]">{field.unit}</span>}
                         </div>
@@ -332,7 +339,7 @@ function Analyze() {
                 </div>
 
                 <form onSubmit={handleImageSubmit}>
-                  <FarmDetailsSection />
+                  {farmDetailFields}
 
                   <input type="file" id="image-input" accept="image/*" onChange={handleImageSelect} disabled={loading} className="hidden" />
                   <label
@@ -376,25 +383,32 @@ function Analyze() {
               </motion.div>
             )}
 
-            {/* Bottom info cards */}
-            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              {[
-                { icon: 'schedule', title: 'Last Reading', value: '2 min ago', desc: 'Auto-sync active', color: 'text-blue-400', bg: 'bg-blue-500/20' },
-                { icon: 'trending_up', title: 'Trend', value: '+2.4%', desc: 'Improving vs last week', color: 'text-emerald-400', bg: 'bg-emerald-500/20' },
-                { icon: 'psychology', title: 'AI Model', value: 'v3.2', desc: '96.4% accuracy', color: 'text-purple-400', bg: 'bg-purple-500/20' },
-              ].map((card, i) => (
-                <motion.div key={i} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.3 + i * 0.1 }} className="glass-panel rounded-xl p-4">
-                  <div className="flex items-center gap-3 mb-2">
-                    <div className={`p-1.5 rounded-lg ${card.bg}`}>
-                      <span className={`material-icons-round text-lg ${card.color}`}>{card.icon}</span>
-                    </div>
-                    <span className="text-xs text-[#8faeb0] font-medium">{card.title}</span>
-                  </div>
-                  <p className="text-xl font-bold text-white">{card.value}</p>
-                  <p className="text-xs text-[#8faeb0] mt-0.5">{card.desc}</p>
-                </motion.div>
-              ))}
-            </div>
+            {/* Info panel */}
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ delay: 0.3 }}
+              className="glass-panel rounded-xl p-5"
+            >
+              <h3 className="text-sm font-bold text-white mb-3 flex items-center gap-2">
+                <span className="material-icons-round text-emerald-400 text-lg">info</span>
+                How it works
+              </h3>
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 text-sm text-[#8faeb0]">
+                <div className="flex items-start gap-2">
+                  <span className="w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">1</span>
+                  <p>Enter farm name, crop type and sensor readings <em>or</em> upload a crop image</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">2</span>
+                  <p>Our CNN model analyses the data and scores crop health</p>
+                </div>
+                <div className="flex items-start gap-2">
+                  <span className="w-5 h-5 rounded-full bg-emerald-500/10 text-emerald-400 flex items-center justify-center text-xs font-bold flex-shrink-0 mt-0.5">3</span>
+                  <p>Receive a ranked list of treatment recommendations and a downloadable PDF report</p>
+                </div>
+              </div>
+            </motion.div>
           </div>
 
           {/* Right Sidebar - Live Results */}
@@ -467,21 +481,6 @@ function Analyze() {
                   <p className="text-xs text-gray-600">Fill in soil moisture, temperature, and humidity to see live results</p>
                 </div>
               )}
-            </motion.div>
-
-            {/* CTA Card */}
-            <motion.div
-              initial={{ opacity: 0, y: 10 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.5 }}
-              className="rounded-xl p-5 bg-gradient-to-br from-emerald-500/20 to-emerald-900/20 border border-emerald-500/20"
-            >
-              <span className="material-icons-round text-emerald-400 text-2xl mb-3 block">rocket_launch</span>
-              <h4 className="text-white font-bold mb-1">Pro Tip</h4>
-              <p className="text-sm text-[#8faeb0] mb-3">Enable automated sensor syncing for real-time monitoring with instant alerts.</p>
-              <button className="text-sm text-emerald-400 font-medium flex items-center gap-1 hover:gap-2 transition-all">
-                Learn more <span className="material-icons-round text-sm">arrow_forward</span>
-              </button>
             </motion.div>
           </div>
         </div>

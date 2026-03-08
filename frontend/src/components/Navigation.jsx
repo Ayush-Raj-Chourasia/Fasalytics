@@ -24,7 +24,7 @@ function Navigation() {
   ]
 
   return (
-    <nav className={`nav-fixed ${scrolled ? 'nav-solid' : ''}`}>
+    <nav className={`nav-fixed ${(scrolled || isOpen) ? 'nav-solid' : ''}`}>
       <div className="nav-inner">
         <Link to="/" className="nav-logo">
           <div className="nav-logo-icon">

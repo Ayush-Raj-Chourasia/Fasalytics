@@ -71,10 +71,10 @@ function DashboardSidebar() {
                     <span>Back to Home</span>
                 </button>
                 <div className="sidebar-user">
-                    <div className="sidebar-user-avatar">A</div>
+                    <div className="sidebar-user-avatar">F</div>
                     <div className="sidebar-user-info">
-                        <p className="sidebar-user-name">Dr. A. Sharma</p>
-                        <p className="sidebar-user-role">Senior Agronomist</p>
+                        <p className="sidebar-user-name">Fasalytics</p>
+                        <p className="sidebar-user-role">Team Inquisitor</p>
                     </div>
                 </div>
             </div>

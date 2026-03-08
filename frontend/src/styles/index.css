@@ -75,11 +75,10 @@ body {
 }
 
 .nav-solid {
-  background: rgba(7, 40, 27, 0.95);
-  -webkit-backdrop-filter: blur(20px);
-  backdrop-filter: blur(20px);
-  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
-  border-bottom: 1px solid rgba(0, 255, 76, 0.06);
+  background: rgba(7, 40, 27, 0.98);
+  -webkit-backdrop-filter: blur(24px);
+  backdrop-filter: blur(24px);
+  box-shadow: 0 2px 24px rgba(0, 0, 0, 0.45);
 }
 
 .nav-inner {
@@ -186,12 +185,26 @@ body {
 
 .nav-mobile {
   display: none;
-  padding: 16px 0;
-  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 8px 16px 16px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(7, 40, 27, 0.98);
 }
 
 .nav-mobile.open {
   display: block;
+}
+
+@media (max-width: 768px) {
+  .nav-mobile .nav-link {
+    padding: 12px 16px;
+    border-radius: 8px;
+    display: block;
+    font-size: 15px;
+  }
+
+  .nav-mobile .nav-link:hover {
+    background: rgba(0, 255, 76, 0.06);
+  }
 }
 
 .nav-mobile .nav-link {
@@ -1440,7 +1453,11 @@ body {
   }
 
   .dashboard-main {
-    padding-top: 56px;
+    padding-top: 0;
+  }
+
+  .dash-header {
+    padding-left: 68px; /* leave room for the 40px toggle button at left:14px */
   }
 }
 

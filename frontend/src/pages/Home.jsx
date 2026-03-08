@@ -10,12 +10,12 @@ function Home() {
   const navigate = useNavigate()
 
   const features = [
-    { icon: Activity, title: 'Real-time Monitoring', description: 'Continuous surveillance of crop conditions using satellite imagery & drone feeds' },
-    { icon: Smartphone, title: 'Precision Irrigation', description: 'AI-driven water scheduling to optimize usage and ensure perfect soil moisture levels' },
-    { icon: Brain, title: 'Pest Detection', description: 'Early warning systems that identify pest infestations before they spread across fields' },
-    { icon: TrendingUp, title: 'Yield Forecasting', description: 'Predictive models that estimate harvest quantities with up to 88% accuracy' },
-    { icon: Droplets, title: 'Climate Analysis', description: 'Hyper-local weather predictions integrated directly into your daily farming planning' },
-    { icon: Leaf, title: 'Soil Health AI', description: 'Deep analysis of soil nutrient composition to recommend precise fertilizer applications' }
+    { icon: Activity, title: 'Dual-Mode Analysis', description: 'Analyse crop health via live IoT sensor readings or by uploading crop images — both processed by our AI engine' },
+    { icon: Brain, title: 'CNN Disease Detection', description: 'Convolutional Neural Network model detects diseases and classifies crop health from images with up to 88% accuracy' },
+    { icon: Droplets, title: 'Sensor Data Insights', description: 'Feed soil moisture, temperature, humidity, leaf wetness, and pH data for instant health scoring' },
+    { icon: TrendingUp, title: 'Actionable Recommendations', description: 'Get prioritised treatment plans, irrigation schedules, and fertiliser guidance based on your specific crop and readings' },
+    { icon: Smartphone, title: 'Analysis History', description: 'Track every analysis across all your farms with timestamped records you can revisit and compare over time' },
+    { icon: Leaf, title: 'PDF Health Reports', description: 'Export a professionally formatted PDF report for any analysis — sensor readings, AI predictions, and recommendations included' }
   ]
 
   const workflow = [
@@ -46,7 +46,7 @@ function Home() {
               transition={{ delay: 0.1, duration: 0.6 }}
             >
               <div className="hero-badge-dot" />
-              <span className="hero-badge-text">New: AI Soil Screening 2.3</span>
+              <span className="hero-badge-text">CNN + IoT Sensor Powered Crop Analysis</span>
             </motion.div>
 
             <motion.h1
@@ -65,7 +65,7 @@ function Home() {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.3, duration: 0.8 }}
             >
-              Maximize yield and minimize waste with real-time analytics driven by advanced machine learning. Precision farming for the modern age.
+              Upload a crop image or enter IoT sensor readings — Fasalytics detects diseases, scores plant health, and delivers prioritised treatment recommendations in seconds.
             </motion.p>
 
             <motion.div
@@ -122,10 +122,10 @@ function Home() {
       <section className="stats-bar">
         <div className="stats-bar-inner">
           {[
-            { value: '500+', label: 'FARMERS TRUSTED' },
-            { value: '98%', label: 'AI ACCURACY' },
-            { value: '1M+', label: 'ACRES ANALYZED' },
-            { value: '24/7', label: 'MONITORING' }
+            { value: '5', label: 'SENSOR METRICS TRACKED' },
+            { value: '88%', label: 'CNN MODEL ACCURACY' },
+            { value: '2', label: 'ANALYSIS MODES' },
+            { value: '24/7', label: 'FREE TO USE' }
           ].map((stat, idx) => (
             <motion.div
               key={idx}
@@ -152,9 +152,9 @@ function Home() {
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <h2 className="section-title">Cultivate Intelligence</h2>
+          <h2 className="section-title">What Fasalytics Can Do</h2>
             <p className="section-subtitle">
-              Our comprehensive suite of tools leverages cutting-edge technology to give you complete control over your farm's ecosystem
+              An end-to-end crop intelligence platform built by Team Inquisitor — combining computer vision with IoT sensor analytics to give farmers actionable insights
             </p>
           </motion.div>
 
@@ -192,7 +192,7 @@ function Home() {
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            <h2 className="section-title">From Field to Data in 3 Steps</h2>
+          <h2 className="section-title">From Field to Report in 3 Steps</h2>
             <p className="section-subtitle">Our streamlined workflow gets you actionable insights in minutes</p>
           </motion.div>
 
@@ -236,7 +236,7 @@ function Home() {
             transition={{ duration: 0.6 }}
             viewport={{ once: true }}
           >
-            Ready to transform your farm?
+            Ready to Analyse Your Crop?
           </motion.h2>
 
           <motion.p
@@ -246,7 +246,7 @@ function Home() {
             transition={{ delay: 0.1 }}
             viewport={{ once: true }}
           >
-            Join farmers worldwide already using Fasalytics for precision agriculture.
+            Try Fasalytics free — upload a crop image or enter sensor data and get an AI health report within seconds.
           </motion.p>
 
           <motion.button
@@ -267,7 +267,7 @@ function Home() {
             transition={{ delay: 0.3 }}
             viewport={{ once: true }}
           >
-            No credit card required for 14-day trial
+            No account needed · Built by Team Inquisitor
           </motion.p>
         </div>
       </section>

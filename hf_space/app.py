@@ -7,10 +7,11 @@ While the model loads, predictions use the rule-based fallback.
 """
 
 import os
+import io
 import threading
 import numpy as np
 from contextlib import asynccontextmanager
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, File, UploadFile
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
@@ -221,6 +222,104 @@ def generate_zone_map(status: str):
 
 
 # ---------------------------------------------------------------------------
+# Image validation + feature extraction
+# ---------------------------------------------------------------------------
+
+def analyze_crop_image_pixels(image_bytes: bytes):
+    """
+    Validate that the uploaded file is a crop/plant image and extract
+    visual proxy features to feed into the CNN-LSTM model.
+
+    Returns:
+        (is_valid: bool, error_msg: str | None, sensor_proxy: SensorData, visual_findings: list[str])
+    """
+    from PIL import Image
+
+    img = Image.open(io.BytesIO(image_bytes)).convert('RGB')
+    img = img.resize((224, 224))
+    pixels = list(img.getdata())
+    total = len(pixels)
+
+    green_count = yellow_count = rust_count = brown_count = 0
+    r_total = g_total = b_total = 0
+
+    for r, g, b in pixels:
+        r_total += r
+        g_total += g
+        b_total += b
+        # Green vegetation: green channel dominates and not too dark
+        if g > r and g > b and g > 50:
+            green_count += 1
+        # Yellow (chlorosis / early disease: high R+G, low B)
+        if r > 150 and g > 150 and b < 100:
+            yellow_count += 1
+        # Orange / rust lesions (wheat rust, bean rust: high R, mid G, low B)
+        if r > 180 and 80 < g < 160 and b < 80:
+            rust_count += 1
+        # Brown necrosis (high R > G, low B)
+        if r > 100 and 50 < g < 130 and b < 80 and r > g:
+            brown_count += 1
+
+    green_ratio  = green_count  / total
+    yellow_ratio = yellow_count / total
+    rust_ratio   = rust_count   / total
+    brown_ratio  = brown_count  / total
+    avg_brightness = (r_total + g_total + b_total) / (total * 3 * 255)
+
+    # ── Crop validation ─────────────────────────────────────────────────────
+    if green_ratio < 0.05:
+        return (
+            False,
+            "This image does not appear to contain crop or plant material. "
+            "Please upload a clear field photo, crop leaf close-up, or plant stem image.",
+            None,
+            []
+        )
+
+    # ── Map visual features to proxy sensor values ───────────────────────────
+    soil_moisture = round(20 + green_ratio * 80, 1)          # 20–100 %
+    humidity      = round(40 + avg_brightness * 45, 1)        # 40–85 %
+    temperature   = 25.0
+    leaf_wetness  = round(
+        max(0.0, min(1.0, 0.2 + green_ratio * 0.5 - (yellow_ratio + rust_ratio) * 0.3)), 2
+    )
+    ph_level      = 6.5
+
+    proxy = SensorData(
+        soil_moisture=soil_moisture,
+        temperature=temperature,
+        humidity=humidity,
+        leaf_wetness=leaf_wetness,
+        ph_level=ph_level,
+    )
+
+    # ── Build human-readable visual findings ─────────────────────────────────
+    findings = []
+    if rust_ratio > 0.02:
+        findings.append(
+            f"Orange/rust-coloured lesions detected ({rust_ratio*100:.1f}% of image) — "
+            f"possible rust disease (e.g. wheat stripe rust, bean rust)."
+        )
+    if yellow_ratio > 0.05:
+        findings.append(
+            f"Yellow discolouration detected ({yellow_ratio*100:.1f}%) — "
+            f"possible chlorosis, early blight, or nutrient deficiency."
+        )
+    if brown_ratio > 0.05:
+        findings.append(
+            f"Brown/necrotic areas detected ({brown_ratio*100:.1f}%) — "
+            f"possible tissue damage, drought stress, or late-stage disease."
+        )
+    if not findings:
+        findings.append(
+            f"Foliage is predominantly green ({green_ratio*100:.1f}%) — "
+            f"no obvious visible disease markers detected."
+        )
+
+    return True, None, proxy, findings
+
+
+# ---------------------------------------------------------------------------
 # Routes
 # ---------------------------------------------------------------------------
 
@@ -253,3 +352,63 @@ def predict(data: SensorData):
         }
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
+
+@app.post("/predict_image")
+async def predict_image(file: UploadFile = File(...)):
+    """
+    Accept a crop image, validate it, run the CNN-LSTM model on
+    pixel-derived proxy sensor values, and return the full prediction.
+    The crop validation check (green pixel ratio) is done here so the
+    Django backend does not need any local image intelligence.
+    """
+    try:
+        image_bytes = await file.read()
+    except Exception:
+        raise HTTPException(status_code=400, detail="Could not read uploaded file.")
+
+    # ── Validate + extract proxy features ──────────────────────────────────
+    try:
+        is_valid, error_msg, proxy, visual_findings = analyze_crop_image_pixels(image_bytes)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Image processing error: {e}")
+
+    if not is_valid:
+        raise HTTPException(status_code=422, detail=error_msg)
+
+    # ── Run the model on proxy sensor values ──────────────────────────────
+    try:
+        if MODEL is not None:
+            status, confidence, healthy_prob, stressed_prob = pytorch_predict(proxy)
+            method = "pytorch_image"
+        else:
+            status, confidence, healthy_prob, stressed_prob = rule_based_predict(proxy)
+            method = "rule_based_image"
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Model inference error: {e}")
+
+    # ── Build recommendation with visual context prepended ─────────────────
+    base_recommendation = generate_recommendation(proxy, status)
+    visual_prefix = " | ".join(visual_findings)
+    full_recommendation = (
+        f"[Image Analysis] {visual_prefix} | {base_recommendation}"
+        if visual_prefix else base_recommendation
+    )
+
+    return {
+        "status":         status,
+        "confidence":     confidence,
+        "recommendation": full_recommendation,
+        "stress_reason":  get_stress_reason(proxy),
+        "zone_map":       generate_zone_map(status),
+        "probabilities":  {"healthy": healthy_prob, "stressed": stressed_prob},
+        "method":         method,
+        "visual_findings": visual_findings,
+        "proxy_sensors":  {
+            "soil_moisture": proxy.soil_moisture,
+            "temperature":   proxy.temperature,
+            "humidity":      proxy.humidity,
+            "leaf_wetness":  proxy.leaf_wetness,
+            "ph_level":      proxy.ph_level,
+        },
+    }

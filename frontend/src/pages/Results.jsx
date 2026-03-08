@@ -3,13 +3,33 @@ import { useNavigate, useParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import { api } from '../api/client'
 
-const zones = [
-  { label: 'North Zone', status: 'good', icon: 'north', value: 95 },
-  { label: 'East Zone', status: 'moderate', icon: 'east', value: 78 },
-  { label: 'South Zone', status: 'good', icon: 'south', value: 92 },
-  { label: 'West Zone', status: 'critical', icon: 'west', value: 54 },
-  { label: 'Central', status: 'good', icon: 'center_focus_strong', value: 88 },
+const STATIC_ZONES = [
+  { label: 'North Zone', status: 'good',     icon: 'north',               value: 95 },
+  { label: 'East Zone',  status: 'moderate', icon: 'east',                value: 78 },
+  { label: 'South Zone', status: 'good',     icon: 'south',               value: 92 },
+  { label: 'West Zone',  status: 'critical', icon: 'west',                value: 54 },
+  { label: 'Central',    status: 'good',     icon: 'center_focus_strong', value: 88 },
 ]
+
+// Convert the 5×5 stress matrix from the API into 5 named zones
+function computeZones(matrix) {
+  if (!matrix || matrix.length !== 5 || !Array.isArray(matrix[0])) return null
+  const health = (v) => Math.round((1 - v) * 100)
+  const avg    = (arr) => arr.reduce((s, v) => s + v, 0) / arr.length
+  const toStatus = (s) => s >= 75 ? 'good' : s >= 50 ? 'moderate' : 'critical'
+  const north   = health(avg(matrix[0]))
+  const east    = health(avg(matrix.map(r => r[4])))
+  const south   = health(avg(matrix[4]))
+  const west    = health(avg(matrix.map(r => r[0])))
+  const central = health(matrix[2][2])
+  return [
+    { label: 'North Zone', icon: 'north',               value: north,   status: toStatus(north)   },
+    { label: 'East Zone',  icon: 'east',                value: east,    status: toStatus(east)    },
+    { label: 'South Zone', icon: 'south',               value: south,   status: toStatus(south)   },
+    { label: 'West Zone',  icon: 'west',                value: west,    status: toStatus(west)    },
+    { label: 'Central',    icon: 'center_focus_strong', value: central, status: toStatus(central) },
+  ]
+}
 
 function Results() {
   const navigate = useNavigate()
@@ -33,7 +53,8 @@ function Results() {
 
   const data = result || {}
 
-  const isHealthy = data.prediction_status === 'healthy'
+  const isHealthy  = data.prediction_status === 'healthy'
+  const displayZones = computeZones(data.zone_map) || STATIC_ZONES
 
   const metrics = [
     { label: 'Soil Moisture', value: `${data.soil_moisture}%`, icon: 'water_drop', color: '#3b82f6', bg: 'bg-blue-500/10' },
@@ -182,6 +203,41 @@ function Results() {
               </div>
             </div>
 
+            {/* Analysed Image */}
+            {data.image_url && (
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ delay: 0.35 }}
+                className="glass-panel rounded-xl p-6"
+              >
+                <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                  <span className="material-icons-round text-emerald-400">image</span>
+                  Analysed Field Image
+                </h3>
+                <div className="relative">
+                  <img
+                    src={data.image_url}
+                    alt="analysed crop field"
+                    className="w-full max-h-80 object-contain rounded-xl border border-white/10"
+                  />
+                  <div className="absolute top-3 right-3">
+                    <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-full text-xs font-semibold backdrop-blur-sm ${
+                      isHealthy
+                        ? 'bg-emerald-500/80 text-white'
+                        : 'bg-red-500/80 text-white'
+                    }`}>
+                      <span className="material-icons-round text-xs">{isHealthy ? 'check_circle' : 'warning'}</span>
+                      {isHealthy ? 'Healthy' : 'Stressed'}
+                    </span>
+                  </div>
+                </div>
+                <p className="text-xs text-[#8faeb0] mt-3 text-center">
+                  Image analysed using Fasalytics CNN crop health model
+                </p>
+              </motion.div>
+            )}
+
             {/* Zone Health Map */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
@@ -194,7 +250,7 @@ function Results() {
                 Zone Health Map
               </h3>
               <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
-                {zones.map((zone, i) => (
+                {displayZones.map((zone, i) => (
                   <div
                     key={i}
                     className={`p-4 rounded-xl border text-center transition-all hover:-translate-y-1 ${zone.status === 'good' ? 'bg-emerald-500/5 border-emerald-500/15'
@@ -308,19 +364,21 @@ function Results() {
 
               {/* Historical Context */}
               <div className="border-t border-white/5 pt-5 mt-5">
-                <h4 className="text-sm font-bold text-white mb-3">Historical Context</h4>
-                <div className="grid grid-cols-3 gap-2">
-                  <div className="p-3 rounded-lg bg-[#071f15] text-center">
-                    <p className="text-lg font-bold text-emerald-400">12</p>
-                    <p className="text-[10px] text-[#8faeb0]">Past Analyses</p>
+                <h4 className="text-sm font-bold text-white mb-3">Analysis Details</h4>
+                <div className="grid grid-cols-2 gap-2">
+                  <div className="p-3 rounded-lg bg-[#071f15] text-center col-span-2">
+                    <p className="text-lg font-bold text-emerald-400">{id}</p>
+                    <p className="text-[10px] text-[#8faeb0]">Analysis #{String(id).padStart(5,'0')}</p>
                   </div>
                   <div className="p-3 rounded-lg bg-[#071f15] text-center">
-                    <p className="text-lg font-bold text-white">+3%</p>
-                    <p className="text-[10px] text-[#8faeb0]">Improvement</p>
+                    <p className="text-lg font-bold text-white">{data.confidence ? `${data.confidence}%` : '—'}</p>
+                    <p className="text-[10px] text-[#8faeb0]">Confidence</p>
                   </div>
                   <div className="p-3 rounded-lg bg-[#071f15] text-center">
-                    <p className="text-lg font-bold text-white">91.8%</p>
-                    <p className="text-[10px] text-[#8faeb0]">Avg Score</p>
+                    <p className={`text-lg font-bold ${isHealthy ? 'text-emerald-400' : 'text-red-400'}`}>
+                      {isHealthy ? 'Healthy' : 'Stressed'}
+                    </p>
+                    <p className="text-[10px] text-[#8faeb0]">Status</p>
                   </div>
                 </div>
               </div>

@@ -175,7 +175,7 @@ function History() {
                 <div className="space-y-3">
                   <div className="flex justify-between text-sm">
                     <span className="text-[#8faeb0]">Total Analyses</span>
-                    <span className="font-bold text-white">{mockAnalyses.length}</span>
+                    <span className="font-bold text-white">{analyses.length}</span>
                   </div>
                   <div className="flex justify-between text-sm">
                     <span className="text-[#8faeb0]">Healthy</span>
@@ -241,9 +241,17 @@ function History() {
 
                             <div className="sm:pl-8">
                               <div className="flex items-start justify-between gap-3 mb-3">
+                                {/* Image thumbnail (image analyses only) */}
+                                {analysis.image_url && (
+                                  <img
+                                    src={analysis.image_url}
+                                    alt="crop"
+                                    className="w-12 h-12 rounded-lg object-cover flex-shrink-0 border border-white/10"
+                                  />
+                                )}
                                 <div className="flex-1 min-w-0">
                                   <div className="flex items-center gap-2 mb-1">
-                                    <h4 className="text-sm font-bold text-white group-hover:text-emerald-400 transition-colors truncate">{analysis.crop_type} — {analysis.field_name}</h4>
+                                    <h4 className="text-sm font-bold text-white group-hover:text-emerald-400 transition-colors truncate">{analysis.crop_type || 'Crop'} — {analysis.farm_name || 'Farm'}</h4>
                                   </div>
                                   <p className="text-xs text-[#8faeb0]">{formatTime(analysis.timestamp)}</p>
                                 </div>
@@ -325,57 +333,86 @@ function History() {
                           <span className="text-2xl font-bold text-white">{latest.confidence.toFixed(1)}%</span>
                         </div>
                       </div>
-                      <p className="text-sm font-medium text-white">{latest.crop_type} — {latest.field_name}</p>
+                      <p className="text-sm font-medium text-white">{latest.crop_type || 'Crop'} — {latest.farm_name || 'Farm'}</p>
                       <p className="text-xs text-[#8faeb0] mt-1">Latest analysis</p>
                     </div>
 
-                    {/* Sensor bars */}
+                    {/* Latest analysed image if available */}
+                    {latest.image_url && (
+                      <div className="mb-4">
+                        <p className="text-xs text-[#8faeb0] mb-2 flex items-center gap-1">
+                          <span className="material-icons-round text-xs text-emerald-400">image</span>
+                          Analysed image
+                        </p>
+                        <img
+                          src={latest.image_url}
+                          alt="latest crop"
+                          className="w-full max-h-40 object-contain rounded-xl border border-white/10"
+                        />
+                      </div>
+                    )}
+
+                    {/* Sensor bars — only real data from analysis */}
                     <div className="space-y-3 mb-6">
                       {[
-                        { label: 'Soil Moisture', value: 68, color: '#3b82f6' },
-                        { label: 'Temperature', value: 45, color: '#f59e0b' },
-                        { label: 'Humidity', value: 72, color: '#06b6d4' },
-                        { label: 'pH Level', value: 49, color: '#8b5cf6' },
-                      ].map((sensor, i) => (
-                        <div key={i}>
-                          <div className="flex justify-between text-xs mb-1">
-                            <span className="text-[#8faeb0]">{sensor.label}</span>
-                            <span className="text-white font-medium">{sensor.value}%</span>
+                        { label: 'Soil Moisture', value: latest.soil_moisture ?? null, max: 100, color: '#3b82f6' },
+                        { label: 'Temperature', value: latest.temperature ?? null, max: 50, color: '#f59e0b' },
+                        { label: 'Humidity', value: latest.humidity ?? null, max: 100, color: '#06b6d4' },
+                        { label: 'pH Level', value: latest.ph_level ?? null, max: 14, color: '#8b5cf6' },
+                      ].map((sensor, i) => {
+                        const pct = sensor.value !== null ? Math.min(100, Math.max(0, (sensor.value / sensor.max) * 100)) : null
+                        return (
+                          <div key={i}>
+                            <div className="flex justify-between text-xs mb-1">
+                              <span className="text-[#8faeb0]">{sensor.label}</span>
+                              <span className="text-white font-medium">{sensor.value !== null ? `${Number(sensor.value).toFixed(1)}${sensor.max === 14 ? '' : '%'}` : '—'}</span>
+                            </div>
+                            <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
+                              {pct !== null && (
+                                <motion.div
+                                  initial={{ width: 0 }}
+                                  animate={{ width: `${pct}%` }}
+                                  transition={{ duration: 0.5, delay: i * 0.1 }}
+                                  className="h-full rounded-full"
+                                  style={{ background: sensor.color }}
+                                />
+                              )}
+                            </div>
                           </div>
-                          <div className="h-1.5 bg-gray-800 rounded-full overflow-hidden">
-                            <motion.div
-                              initial={{ width: 0 }}
-                              animate={{ width: `${sensor.value}%` }}
-                              transition={{ duration: 0.5, delay: i * 0.1 }}
-                              className="h-full rounded-full"
-                              style={{ background: sensor.color }}
-                            />
-                          </div>
-                        </div>
-                      ))}
+                        )
+                      })}
                     </div>
                   </>
                 )
               })()}
 
-              {/* Recommended Actions */}
+              {/* Analysis Actions */}
               <div className="border-t border-white/5 pt-5">
                 <h4 className="text-xs font-semibold text-[#8faeb0] uppercase tracking-wider mb-3 flex items-center gap-2">
                   <span className="material-icons-round text-sm text-emerald-400">auto_awesome</span>
-                  Recommended Actions
+                  Quick Actions
                 </h4>
                 <div className="space-y-2">
-                  {['Schedule field inspection for east zones', 'Update irrigation plan based on trends', 'Review seasonal performance reports'].map((action, i) => (
-                    <motion.div
+                  {[
+                    { label: 'Export full history as PDF', icon: 'download' },
+                    { label: 'Start a new analysis', icon: 'add_circle' },
+                    { label: 'View latest result', icon: 'open_in_new' },
+                  ].map((action, i) => (
+                    <motion.button
                       key={i}
+                      onClick={() => {
+                        if (i === 0) { /* pdf export all not yet wired */ }
+                        if (i === 1) navigate('/analyze')
+                        if (i === 2 && sortedAnalyses.length > 0) navigate(`/results/${sortedAnalyses[0].id}`)
+                      }}
                       initial={{ opacity: 0, x: -10 }}
                       animate={{ opacity: 1, x: 0 }}
                       transition={{ delay: 0.3 + i * 0.1 }}
-                      className="flex items-start gap-3 p-3 rounded-lg bg-[#071f15] border border-white/5"
+                      className="w-full flex items-start gap-3 p-3 rounded-lg bg-[#071f15] border border-white/5 hover:border-emerald-500/20 transition-all text-left"
                     >
-                      <span className="flex-shrink-0 w-5 h-5 rounded-full bg-emerald-500/10 flex items-center justify-center text-xs font-bold text-emerald-400">{i + 1}</span>
-                      <p className="text-xs text-gray-300">{action}</p>
-                    </motion.div>
+                      <span className="flex-shrink-0 material-icons-round text-emerald-400 text-sm mt-0.5">{action.icon}</span>
+                      <p className="text-xs text-gray-300">{action.label}</p>
+                    </motion.button>
                   ))}
                 </div>
               </div>

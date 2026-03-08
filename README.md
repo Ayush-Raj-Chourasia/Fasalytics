@@ -1,6 +1,20 @@
-# 🌱 Fasalytics - AI-Powered Crop Health Monitoring Platform
+# 🌱 Fasalytics — AI-Powered Crop Health Monitoring Platform
 
 > A modern, intelligent platform for agricultural monitoring using AI/ML and real-time sensor data analysis.
+
+---
+
+## 👥 Team Inquisitor
+
+| Name | Role |
+|------|------|
+| **Keshav Jha** | Team Leader & Frontend |
+| **Ayush Raj Chourasia** | Full Stack |
+| **Pratikhya Panda** | ML / AI Dev |
+| **Priyanshu Pratik** | ML / AI Dev |
+| **Diasha Kar** | Pitching & Documentation |
+
+---
 
 ## Overview
 
@@ -355,8 +369,9 @@ MIT License - See LICENSE file for details
 ---
 
 **Version:** 1.0.0  
-**Last Updated:** February 2024  
-**Status:** Production Ready ✅
+**Last Updated:** March 2026  
+**Status:** Production Ready ✅  
+**Team:** Inquisitor
 
 Made with 🌱 for a greener future
 

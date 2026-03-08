@@ -7,10 +7,23 @@ from django.core.paginator import Paginator
 from .models import ContactMessage, CropAnalysis
 from .forms import CropAnalysisForm
 from .inference import get_predictor
-from reportlab.pdfgen import canvas
 import json
 from datetime import datetime
 import os
+
+
+def _build_recommendations(recommendation_text, status):
+    """Convert a recommendation string into a structured list for the frontend."""
+    if not recommendation_text:
+        return [{'title': 'Monitor Conditions', 'description': 'Continue regular crop monitoring.', 'priority': 'low'}]
+    parts = [p.strip() for p in recommendation_text.replace('\n', '.').split('.') if p.strip() and len(p.strip()) > 5]
+    if not parts:
+        parts = [recommendation_text]
+    result = []
+    for i, part in enumerate(parts[:5]):
+        priority = 'high' if (i == 0 and status == 'stressed') else ('medium' if i < 2 else 'low')
+        result.append({'title': part[:70] + ('...' if len(part) > 70 else ''), 'description': part, 'priority': priority})
+    return result
 
 # ==========================================
 # API ENDPOINTS FOR REACT FRONTEND
@@ -31,25 +44,38 @@ def analyze_crop_api(request):
     if request.method == 'OPTIONS':
         return JsonResponse({'status': 'ok'}, status=200)
     try:
-        # Check if it's a POST request with files (image upload)
+        # ── Image upload: delegate ALL inference + validation to HF Space ──
         if request.FILES.get('crop_image'):
-            # Handle image-based analysis
             crop_image = request.FILES.get('crop_image')
-            
+            farm_name  = request.POST.get('farm_name', '')
+            crop_type  = request.POST.get('crop_type', '')
+
+            try:
+                predictor = get_predictor()
+                result = predictor.predict_from_image(crop_image)
+            except ValueError as ve:
+                # Crop validation rejected the image (not a plant photo)
+                return JsonResponse({'success': False, 'message': str(ve)}, status=400)
+            except Exception as e:
+                return JsonResponse({'success': False, 'message': f'Image analysis failed: {e}'}, status=500)
+
+            crop_image.seek(0)
             analysis = CropAnalysis.objects.create(
-                crop_image=crop_image,
-                prediction_status='healthy',  # Default status
-                confidence=85.5,
-                recommendation='Image received for analysis',
-                stress_reason='',
-                zone_map=[]
+                image=crop_image,
+                farm_name=farm_name,
+                crop_type=crop_type,
+                soil_moisture=result.get('soil_moisture', 50.0),
+                temperature=result.get('temperature',   25.0),
+                humidity=result.get('humidity',          65.0),
+                leaf_wetness=result.get('leaf_wetness',   0.3),
+                ph_level=result.get('ph_level',           6.5),
+                prediction_status=result.get('status', 'healthy'),
+                confidence=round(result.get('confidence', 80.0), 1),
+                recommendation=result.get('recommendation', ''),
+                stress_reason=result.get('stress_reason', ''),
+                zone_map=result.get('zone_map', []),
             )
-            
-            return JsonResponse({
-                'success': True,
-                'id': analysis.id,
-                'message': 'Image analysis submitted'
-            }, status=201)
+            return JsonResponse({'success': True, 'id': analysis.id, 'message': 'Image analysis completed'}, status=201)
         
         # Handle sensor data based analysis
         data = json.loads(request.body)
@@ -61,14 +87,16 @@ def analyze_crop_api(request):
         
         # Create analysis record
         analysis = CropAnalysis.objects.create(
+            farm_name=data.get('farm_name', ''),
+            crop_type=data.get('crop_type', ''),
             soil_moisture=float(data['soil_moisture']),
             temperature=float(data['temperature']),
             humidity=float(data['humidity']),
             leaf_wetness=float(data.get('leaf_wetness', 0)),
             ph_level=float(data['ph_level']),
-            prediction_status='unknown',  # Default status
-            confidence=0.0,  # Will be updated by prediction
-            recommendation='Processing...',
+            prediction_status='unknown',
+            confidence=0.0,
+            recommendation='',
             stress_reason='',
             zone_map=[]
         )
@@ -121,20 +149,27 @@ def crop_results_api(request, pk):
         # Ensure zone_map is properly formatted
         zone_map = analysis.zone_map if isinstance(analysis.zone_map, list) else []
         
+        recommendations = _build_recommendations(analysis.recommendation, analysis.prediction_status)
+        image_url = request.build_absolute_uri(analysis.image.url) if analysis.image else None
+
         return JsonResponse({
             'id': analysis.id,
             'prediction_status': analysis.prediction_status,
             'confidence': analysis.confidence,
             'farm_name': analysis.farm_name or 'Unknown Farm',
+            'crop_type': analysis.crop_type or '',
             'farmer_name': analysis.farmer_name or 'Anonymous',
             'recommendation': analysis.recommendation,
+            'recommendations': recommendations,
             'stress_reason': analysis.stress_reason,
             'timestamp': analysis.created_at.isoformat(),
             'soil_moisture': analysis.soil_moisture,
             'temperature': analysis.temperature,
             'humidity': analysis.humidity,
+            'leaf_wetness': analysis.leaf_wetness,
             'ph_level': analysis.ph_level,
-            'zone_map': zone_map
+            'zone_map': zone_map,
+            'image_url': image_url,
         }, status=200)
     except CropAnalysis.DoesNotExist:
         return JsonResponse({'success': False, 'message': 'Analysis not found'}, status=404)
@@ -159,13 +194,21 @@ def analysis_history_api(request):
         # Format response
         results = []
         for analysis in page_obj:
+            image_url = request.build_absolute_uri(analysis.image.url) if analysis.image else None
             results.append({
                 'id': analysis.id,
                 'prediction_status': analysis.prediction_status,
                 'confidence': analysis.confidence,
                 'farm_name': analysis.farm_name or 'Farm',
+                'crop_type': analysis.crop_type or '',
                 'farmer_name': analysis.farmer_name or 'Farmer',
                 'timestamp': analysis.created_at.isoformat(),
+                'soil_moisture': analysis.soil_moisture,
+                'temperature':   analysis.temperature,
+                'humidity':      analysis.humidity,
+                'leaf_wetness':  analysis.leaf_wetness,
+                'ph_level':      analysis.ph_level,
+                'image_url':     image_url,
             })
         
         return JsonResponse({
@@ -220,102 +263,171 @@ def dashboard_api(request):
                 'stressed': week_stressed
             })
         
+        # Recent analyses for dashboard table
+        recent_qs = CropAnalysis.objects.all().order_by('-created_at')[:5]
+        recent_analyses = [{
+            'id': a.id,
+            'farm_name': a.farm_name or 'Farm',
+            'crop_type': a.crop_type or '',
+            'confidence': round(a.confidence, 1),
+            'status': a.prediction_status,
+            'timestamp': a.created_at.isoformat(),
+        } for a in recent_qs]
+
         return JsonResponse({
             'success': True,
             'total_analyses': total_analyses,
             'healthy_count': healthy_count,
             'stressed_count': stressed_count,
-            'healthy_percentage': (healthy_count / total_analyses * 100) if total_analyses > 0 else 0,
-            'stressed_percentage': (stressed_count / total_analyses * 100) if total_analyses > 0 else 0,
+            'healthy_percentage': round((healthy_count / total_analyses * 100), 1) if total_analyses > 0 else 0,
+            'stressed_percentage': round((stressed_count / total_analyses * 100), 1) if total_analyses > 0 else 0,
             'avg_confidence': round(avg_confidence, 2),
-            'trend_data': trend_data
+            'trend_data': trend_data,
+            'recent_analyses': recent_analyses,
         }, status=200)
     except Exception as e:
         return JsonResponse({'success': False, 'message': str(e)}, status=400)
 
 @require_http_methods(["GET"])
 def export_analysis_pdf(request, pk):
-    """Export crop analysis as PDF"""
+    """Export crop analysis as a professional PDF report."""
     try:
         analysis = get_object_or_404(CropAnalysis, pk=pk)
-        
+
         response = HttpResponse(content_type='application/pdf')
-        response['Content-Disposition'] = f'attachment; filename="crop_analysis_{analysis.pk}.pdf"'
-        
-        p = canvas.Canvas(response)
-        
-        # Title
-        p.setFont("Helvetica-Bold", 16)
-        p.drawString(50, 800, "FASALYTICS - Crop Health Analysis Report")
-        
-        # Divider
-        p.setFont("Helvetica", 10)
-        p.drawString(50, 780, "=" * 80)
-        
-        # Farm and farmer info
-        p.setFont("Helvetica-Bold", 12)
-        p.drawString(50, 760, "Farm Information")
-        p.setFont("Helvetica", 10)
-        p.drawString(50, 740, f"Crop Type: {analysis.crop_type or 'Unknown'}")
-        p.drawString(50, 720, f"Field: {analysis.field_name or 'Unknown'}")
-        p.drawString(50, 700, f"Analysis Date: {analysis.created_at.strftime('%Y-%m-%d %H:%M:%S')}")
-        
+        response['Content-Disposition'] = f'attachment; filename="fasalytics_report_{analysis.pk}.pdf"'
+
+        from reportlab.lib.pagesizes import A4
+        from reportlab.lib.colors import HexColor, white, black
+        from reportlab.lib.units import cm
+        from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer, Table, TableStyle, HRFlowable
+        from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+        from reportlab.lib.enums import TA_CENTER, TA_LEFT
+
+        doc = SimpleDocTemplate(response, pagesize=A4,
+                                leftMargin=2*cm, rightMargin=2*cm,
+                                topMargin=2*cm, bottomMargin=2*cm)
+
+        green = HexColor('#00b050')
+        dark = HexColor('#1a1a2e')
+        red = HexColor('#c0392b')
+        light_gray = HexColor('#f2f2f2')
+        mid_gray = HexColor('#666666')
+
+        styles = getSampleStyleSheet()
+        title_style = ParagraphStyle('Title', parent=styles['Title'],
+                                     fontSize=22, textColor=green, spaceAfter=6, alignment=TA_CENTER)
+        sub_style = ParagraphStyle('Sub', parent=styles['Normal'],
+                                   fontSize=10, textColor=mid_gray, alignment=TA_CENTER, spaceAfter=14)
+        section_style = ParagraphStyle('Section', parent=styles['Heading2'],
+                                       fontSize=13, textColor=dark, spaceBefore=14, spaceAfter=6)
+        body_style = ParagraphStyle('Body', parent=styles['Normal'], fontSize=10, spaceAfter=4)
+
+        status_color = green if analysis.prediction_status == 'healthy' else red
+        status_text = 'HEALTHY ✓' if analysis.prediction_status == 'healthy' else 'STRESSED ⚠'
+
+        story = []
+
+        # Header
+        story.append(Paragraph('FASALYTICS', title_style))
+        story.append(Paragraph('AI-Powered Crop Health Analysis Report', sub_style))
+        story.append(HRFlowable(width='100%', thickness=2, color=green))
+        story.append(Spacer(1, 0.4*cm))
+
+        # Status banner
+        status_style = ParagraphStyle('Status', parent=styles['Normal'],
+                                      fontSize=16, textColor=status_color,
+                                      alignment=TA_CENTER, spaceAfter=10, spaceBefore=6)
+        story.append(Paragraph(f'Result: {status_text}  |  Confidence: {analysis.confidence:.1f}%', status_style))
+        story.append(HRFlowable(width='100%', thickness=1, color=light_gray))
+        story.append(Spacer(1, 0.4*cm))
+
+        # Farm details
+        story.append(Paragraph('Farm Information', section_style))
+        farm_data = [
+            ['Report ID', f'#FAS-{analysis.pk:05d}'],
+            ['Farm / Field', analysis.farm_name or 'N/A'],
+            ['Crop Type', analysis.crop_type or 'N/A'],
+            ['Analysis Date', analysis.created_at.strftime('%B %d, %Y at %H:%M UTC')],
+        ]
+        farm_table = Table(farm_data, colWidths=[4*cm, 12*cm])
+        farm_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (0, -1), light_gray),
+            ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('GRID', (0, 0), (-1, -1), 0.5, HexColor('#dddddd')),
+            ('PADDING', (0, 0), (-1, -1), 8),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ]))
+        story.append(farm_table)
+        story.append(Spacer(1, 0.4*cm))
+
         # Sensor data
-        p.setFont("Helvetica-Bold", 12)
-        p.drawString(50, 670, "Sensor Data")
-        p.setFont("Helvetica", 10)
-        p.drawString(50, 650, f"Soil Moisture: {analysis.soil_moisture:.1f}%")
-        p.drawString(50, 630, f"Temperature: {analysis.temperature:.1f}°C")
-        p.drawString(50, 610, f"Humidity: {analysis.humidity:.1f}%")
-        p.drawString(50, 590, f"Soil pH: {analysis.ph_level:.1f}")
-        
-        # Prediction results
-        p.setFont("Helvetica-Bold", 12)
-        p.drawString(50, 540, "Prediction Results")
-        p.setFont("Helvetica", 10)
-        status_text = "HEALTHY" if analysis.prediction_status == 'healthy' else "STRESSED"
-        p.drawString(50, 520, f"Crop Status: {status_text}")
-        p.drawString(50, 500, f"Confidence: {analysis.confidence:.1f}%")
-        p.drawString(50, 480, f"Stress Reason: {analysis.stress_reason or 'N/A'}")
-        
-        # Recommendation
-        p.setFont("Helvetica-Bold", 12)
-        p.drawString(50, 450, "Recommendation")
-        p.setFont("Helvetica", 10)
-        
-        # Wrap recommendation text
-        recommendation = analysis.recommendation or "No recommendation"
-        words = recommendation.split()
-        line = ""
-        y_position = 430
-        
-        for word in words:
-            if len(line) + len(word) > 80:
-                if y_position < 100:
-                    p.showPage()
-                    y_position = 800
-                p.drawString(50, y_position, line)
-                y_position -= 20
-                line = word
-            else:
-                line += word + " "
-        
-        if line:
-            if y_position < 100:
-                p.showPage()
-                y_position = 800
-            p.drawString(50, y_position, line)
-        
+        story.append(Paragraph('Sensor Readings', section_style))
+        sensor_data_table = [
+            ['Parameter', 'Value', 'Optimal Range'],
+            ['Soil Moisture', f'{analysis.soil_moisture:.1f}%', '40 – 60%'],
+            ['Temperature', f'{analysis.temperature:.1f} °C', '20 – 25 °C'],
+            ['Humidity', f'{analysis.humidity:.1f}%', '60 – 80%'],
+            ['Leaf Wetness', f'{analysis.leaf_wetness:.1f}%', 'Low'],
+            ['Soil pH', f'{analysis.ph_level:.1f}', '6.0 – 7.0'],
+        ]
+        sensor_table = Table(sensor_data_table, colWidths=[5*cm, 5*cm, 6*cm])
+        sensor_table.setStyle(TableStyle([
+            ('BACKGROUND', (0, 0), (-1, 0), dark),
+            ('TEXTCOLOR', (0, 0), (-1, 0), white),
+            ('FONTNAME', (0, 0), (-1, 0), 'Helvetica-Bold'),
+            ('FONTSIZE', (0, 0), (-1, -1), 10),
+            ('GRID', (0, 0), (-1, -1), 0.5, HexColor('#dddddd')),
+            ('BACKGROUND', (0, 1), (-1, -1), white),
+            ('ROWBACKGROUNDS', (0, 1), (-1, -1), [white, light_gray]),
+            ('PADDING', (0, 0), (-1, -1), 8),
+            ('ALIGN', (1, 0), (-1, -1), 'CENTER'),
+            ('VALIGN', (0, 0), (-1, -1), 'MIDDLE'),
+        ]))
+        story.append(sensor_table)
+        story.append(Spacer(1, 0.4*cm))
+
+        # Recommendations
+        story.append(Paragraph('AI Recommendations', section_style))
+        if analysis.stress_reason:
+            story.append(Paragraph(f'<b>Stress Reason:</b> {analysis.stress_reason}', body_style))
+            story.append(Spacer(1, 0.2*cm))
+
+        recommendations = _build_recommendations(analysis.recommendation, analysis.prediction_status)
+        for i, rec in enumerate(recommendations, 1):
+            priority_badge = {'high': '[HIGH]', 'medium': '[MEDIUM]', 'low': '[LOW]'}.get(rec['priority'], '')
+            story.append(Paragraph(f'<b>{i}. {rec["title"]} {priority_badge}</b>', body_style))
+            story.append(Paragraph(f'&nbsp;&nbsp;&nbsp;&nbsp;{rec["description"]}', body_style))
+        story.append(Spacer(1, 0.4*cm))
+
+        # Analysed image (if available)
+        if analysis.image:
+            try:
+                import os
+                img_path = analysis.image.path
+                if os.path.exists(img_path):
+                    from reportlab.platypus import Image as RLImage
+                    story.append(Paragraph('Analysed Field Image', section_style))
+                    rl_img = RLImage(img_path, width=10*cm, height=8*cm, kind='proportional')
+                    story.append(rl_img)
+                    story.append(Spacer(1, 0.4*cm))
+            except Exception as img_err:
+                print(f'PDF image embed skipped: {img_err}')
+
         # Footer
-        p.setFont("Helvetica-Oblique", 8)
-        p.drawString(50, 30, f"Generated by FASALYTICS on {datetime.now().strftime('%Y-%m-%d %H:%M:%S')}")
-        
-        p.showPage()
-        p.save()
-        
+        story.append(HRFlowable(width='100%', thickness=1, color=light_gray))
+        footer_style = ParagraphStyle('Footer', parent=styles['Normal'],
+                                      fontSize=8, textColor=mid_gray, alignment=TA_CENTER, spaceBefore=6)
+        story.append(Paragraph(
+            f'Generated by FASALYTICS • Team Inquisitor • {datetime.now().strftime("%B %d, %Y at %H:%M")}',
+            footer_style
+        ))
+
+        doc.build(story)
         return response
-    except CropAnalysis.DoesNotExist:
-        return JsonResponse({'success': False, 'message': 'Analysis not found'}, status=404)
+    except Exception as e:
+        return JsonResponse({'success': False, 'message': str(e)}, status=400)
 
 @require_POST
 @csrf_exempt

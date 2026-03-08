@@ -19,12 +19,12 @@ class CropAnalysis(models.Model):
         ('stressed', 'Stressed'),
     ]
     
-    # Sensor inputs
-    soil_moisture = models.FloatField(help_text="Soil moisture percentage (0-100)")
-    temperature = models.FloatField(help_text="Temperature in Celsius")
-    humidity = models.FloatField(help_text="Humidity percentage (0-100)")
-    leaf_wetness = models.FloatField(help_text="Leaf wetness (0-1)")
-    ph_level = models.FloatField(help_text="Soil pH level")
+    # Sensor inputs (optional — image-only analyses may not have sensor data)
+    soil_moisture = models.FloatField(default=0.0, help_text="Soil moisture percentage (0-100)")
+    temperature = models.FloatField(default=0.0, help_text="Temperature in Celsius")
+    humidity = models.FloatField(default=0.0, help_text="Humidity percentage (0-100)")
+    leaf_wetness = models.FloatField(default=0.0, help_text="Leaf wetness (0-1)")
+    ph_level = models.FloatField(default=0.0, help_text="Soil pH level")
     
     # Image upload (optional)
     image = models.ImageField(upload_to='crop_images/', null=True, blank=True)
@@ -42,8 +42,9 @@ class CropAnalysis(models.Model):
     zone_map = models.JSONField(default=list, blank=True)
     
     # Metadata
-    farm_name = models.CharField(max_length=255, blank=True)
-    farmer_name = models.CharField(max_length=255, blank=True)
+    farm_name = models.CharField(max_length=255, blank=True, default='')
+    crop_type = models.CharField(max_length=100, blank=True, default='')
+    farmer_name = models.CharField(max_length=255, blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
     updated_at = models.DateTimeField(auto_now=True)
     
