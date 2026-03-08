@@ -20,10 +20,10 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install dependencies into antenv
+      - name: Install dependencies for testing
         run: |
-          python -m venv antenv
-          source antenv/bin/activate
+          python -m venv testenv
+          source testenv/bin/activate
           pip install --upgrade pip
           pip install -r requirements.txt
 
@@ -35,7 +35,7 @@ jobs:
           HF_SPACE_URL: ""
           DJANGO_SETTINGS_MODULE: backend.settings
         run: |
-          source antenv/bin/activate
+          source testenv/bin/activate
           python -c "
           import os, django
           os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
@@ -50,6 +50,13 @@ jobs:
         with:
           name: python-app
           path: .
+          exclude: |
+            testenv/**
+            antenv/**
+            .git/**
+            __pycache__/**
+            **/__pycache__/**
+            *.pyc
 
   deploy:
     runs-on: ubuntu-latest
