@@ -1,15 +1,29 @@
 """
 FastAPI inference server for Fasalytics crop health prediction.
 Runs on Hugging Face Spaces (Docker SDK) on port 7860.
+
+Model is loaded in a background thread so uvicorn starts immediately.
+While the model loads, predictions use the rule-based fallback.
 """
 
 import os
+import threading
 import numpy as np
+from contextlib import asynccontextmanager
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-app = FastAPI(title="Fasalytics Crop Health Model", version="1.0.0")
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Load model in background thread — don't block uvicorn startup
+    t = threading.Thread(target=load_model, daemon=True)
+    t.start()
+    yield
+
+
+app = FastAPI(title="Fasalytics Crop Health Model", version="1.0.0", lifespan=lifespan)
 
 app.add_middleware(
     CORSMiddleware,
@@ -57,10 +71,6 @@ def load_model():
     except Exception as e:
         print(f"Model load failed: {e}")
         return False
-
-
-# Load on startup
-load_model()
 
 
 # ---------------------------------------------------------------------------
