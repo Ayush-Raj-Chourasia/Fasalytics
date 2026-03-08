@@ -23,9 +23,8 @@ jobs:
       - name: Install dependencies
         run: |
           pip install --upgrade pip
-          pip install -r requirement.txt
-        # requirement.txt contains only lean Azure packages
-        # Heavy ML deps (torch, numpy, transformers) run on HuggingFace Space only
+          pip install -r requirements.txt
+        # requirements.txt is the Oryx-compatible name Azure uses for auto-build
 
       - name: Verify Django starts
         env:
@@ -57,7 +56,10 @@ jobs:
             --exclude "antenv/*" \
             --exclude "venv/*" \
             --exclude "*.sqlite3" \
-            --exclude "node_modules/*"
+            --exclude "node_modules/*" \
+            --exclude "hf_space/*" \
+            --exclude "frontend/*" \
+            --exclude "docs/*"
 
       - name: Upload artifact for deployment
         uses: actions/upload-artifact@v4
@@ -75,50 +77,11 @@ jobs:
         with:
           name: python-app
 
-      - name: Deploy via Kudu REST API (direct zip deploy)
-        env:
-          PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-        run: |
-          # Extract Kudu credentials from publish profile XML
-          USER=$(echo "$PUBLISH_PROFILE" | grep -oP 'userName="\K[^"]+' | head -1)
-          PASS=$(echo "$PUBLISH_PROFILE" | grep -oP 'userPWD="\K[^"]+' | head -1)
-          echo "User found: ${#USER} chars, Pass found: ${#PASS} chars"
-          
-          echo "Deploying zip to Azure Kudu..."
-          RESPONSE=$(curl -s -w "\nHTTP_STATUS:%{http_code}" \
-            -X POST \
-            --user "$USER:$PASS" \
-            --header "Content-Type: application/zip" \
-            --data-binary @release.zip \
-            "https://fasalytics-api.scm.azurewebsites.net/api/zipdeploy?isAsync=false")
-          HTTP_STATUS=$(echo "$RESPONSE" | grep -o "HTTP_STATUS:[0-9]*" | cut -d: -f2)
-          echo "Deploy HTTP status: $HTTP_STATUS"
-          echo "Response: $(echo "$RESPONSE" | head -5)"
-          
-          if [ "$HTTP_STATUS" != "200" ] && [ "$HTTP_STATUS" != "204" ]; then
-            echo "Deployment failed with status $HTTP_STATUS"
-            exit 1
-          fi
-          
-          echo "Verifying deployed file..."
-          VFS_STATUS=$(curl -s -o /tmp/views.py -w "%{http_code}" \
-            --user "$USER:$PASS" \
-            "https://fasalytics-api.scm.azurewebsites.net/api/vfs/site/wwwroot/backend/main/views.py")
-          echo "VFS fetch status: $VFS_STATUS"
-          if [ "$VFS_STATUS" = "200" ]; then
-            echo "First 5 lines of deployed views.py:"
-            head -5 /tmp/views.py
-          else
-            echo "Could not read deployed file (status $VFS_STATUS)"
-          fi
-          
-          echo "Restarting app via Kudu..."
-          RESTART=$(curl -s -w "%{http_code}" -o /dev/null \
-            -X POST \
-            --user "$USER:$PASS" \
-            "https://fasalytics-api.scm.azurewebsites.net/api/command" \
-            -H "Content-Type: application/json" \
-            -d '{"command":"echo restarted"}')
-          echo "Restart probe: $RESTART"
-          echo "Done."
+      - name: Deploy to Azure Web App
+        uses: azure/webapps-deploy@v3
+        with:
+          app-name: 'fasalytics-api'
+          slot-name: 'Production'
+          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: release.zip
 
