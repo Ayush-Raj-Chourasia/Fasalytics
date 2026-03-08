@@ -1,20 +1,13 @@
 #!/bin/bash
-# startup.sh — Azure App Service startup command
-# Oryx activates its venv before this runs, so python/gunicorn are in PATH.
-set -e
-
 cd /home/site/wwwroot
 
-echo "==> Python: $(which python) | $(python --version)"
-echo "==> Gunicorn: $(which gunicorn)"
-
-echo "==> Running database migrations..."
-python manage.py migrate --no-input
+echo "==> Running migrations..."
+python manage.py migrate --no-input || echo "Migrations skipped"
 
 echo "==> Collecting static files..."
-python manage.py collectstatic --no-input 2>/dev/null || true
+python manage.py collectstatic --no-input 2>/dev/null || echo "Collectstatic skipped"
 
-echo "==> Starting gunicorn on port 8000..."
+echo "==> Starting gunicorn..."
 exec gunicorn backend.wsgi:application \
   --bind 0.0.0.0:8000 \
   --workers 1 \
