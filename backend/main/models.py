@@ -18,6 +18,12 @@ class CropAnalysis(models.Model):
         ('healthy', 'Healthy'),
         ('stressed', 'Stressed'),
     ]
+
+    def __init__(self, *args, **kwargs):
+        # Backwards-compatibility: old views.py used crop_image=, new ones use image=
+        if 'crop_image' in kwargs:
+            kwargs['image'] = kwargs.pop('crop_image')
+        super().__init__(*args, **kwargs)
     
     # Sensor inputs (optional — image-only analyses may not have sensor data)
     soil_moisture = models.FloatField(default=0.0, help_text="Soil moisture percentage (0-100)")
