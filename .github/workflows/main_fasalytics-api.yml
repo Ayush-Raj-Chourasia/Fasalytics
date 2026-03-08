@@ -49,14 +49,13 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: python-app
-          path: .
-          exclude: |
-            testenv/**
-            antenv/**
-            .git/**
-            __pycache__/**
-            **/__pycache__/**
-            *.pyc
+          path: |
+            .
+            !testenv/**
+            !antenv/**
+            !.git/**
+            !**/__pycache__/**
+            !*.pyc
 
   deploy:
     runs-on: ubuntu-latest
@@ -74,3 +73,4 @@ jobs:
           app-name: 'fasalytics-api'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+

@@ -76,6 +76,7 @@ body {
 
 .nav-solid {
   background: rgba(7, 40, 27, 0.95);
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   box-shadow: 0 4px 30px rgba(0, 0, 0, 0.3);
   border-bottom: 1px solid rgba(0, 255, 76, 0.06);
@@ -392,6 +393,7 @@ body {
   bottom: -20px;
   right: 20px;
   background: rgba(0, 0, 0, 0.35);
+  -webkit-backdrop-filter: blur(20px);
   backdrop-filter: blur(20px);
   border: 1px solid rgba(255, 255, 255, 0.04);
   border-radius: 12px;
@@ -543,8 +545,8 @@ body {
   padding: 28px;
   border-radius: 20px;
   background: linear-gradient(180deg, rgba(255, 255, 255, 0.02), rgba(255, 255, 255, 0.01));
-  backdrop-filter: blur(8px);
   -webkit-backdrop-filter: blur(8px);
+  backdrop-filter: blur(8px);
   border: 1px solid rgba(255, 255, 255, 0.04);
   transition: all 0.3s ease;
   cursor: pointer;
@@ -940,6 +942,7 @@ body {
   background: linear-gradient(135deg, rgba(0, 255, 76, 0.03) 0%, rgba(0, 255, 76, 0.01) 100%);
   border: 1px solid rgba(0, 255, 76, 0.08);
   border-radius: 16px;
+  -webkit-backdrop-filter: blur(12px);
   backdrop-filter: blur(12px);
   padding: 24px;
   transition: border-color 0.3s ease, box-shadow 0.3s ease;
@@ -1432,6 +1435,7 @@ body {
     inset: 0;
     z-index: 35;
     background: rgba(0, 0, 0, 0.6);
+    -webkit-backdrop-filter: blur(4px);
     backdrop-filter: blur(4px);
   }
 
@@ -1442,8 +1446,8 @@ body {
 
 /* ===== STYLED SELECT ===== */
 .select-styled {
-  appearance: none;
   -webkit-appearance: none;
+  appearance: none;
   padding: 8px 36px 8px 14px;
   border-radius: 10px;
   border: 1px solid rgba(0, 255, 76, 0.15);
@@ -1472,8 +1476,8 @@ body {
   top: 0;
   z-index: 10;
   background: rgba(7, 40, 27, 0.92);
-  backdrop-filter: blur(20px);
   -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
   border-bottom: 1px solid rgba(0, 255, 76, 0.08);
   padding: 18px 24px;
 }

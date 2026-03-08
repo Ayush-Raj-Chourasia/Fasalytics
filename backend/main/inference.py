@@ -29,14 +29,15 @@ class CropHealthPredictor:
         Returns:
             dict with status, confidence, recommendation, stress_reason, zone_map
         """
-        # Tier 1: HF Space API (PyTorch model)
+        # Tier 1: HF Space API (PyTorch model) — primary inference path
         if HF_SPACE_URL:
             result = self._predict_via_hf_api(sensor_data)
             if result:
                 return result
 
-        # Tier 2: Rule-based fallback
-        return self._predict_rule_based(sensor_data)
+        # Tier 2: Rule-based fallback (disabled — HF Space is live)
+        # return self._predict_rule_based(sensor_data)
+        raise RuntimeError("HF_SPACE_URL is not configured or unreachable. Set HF_SPACE_URL in Azure App Settings.")
 
     def _predict_via_hf_api(self, sensor_data):
         """Call the Hugging Face Space prediction API."""
