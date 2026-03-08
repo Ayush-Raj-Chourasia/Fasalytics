@@ -324,7 +324,7 @@ def export_analysis_pdf(request, pk):
         body_style = ParagraphStyle('Body', parent=styles['Normal'], fontSize=10, spaceAfter=4)
 
         status_color = green if analysis.prediction_status == 'healthy' else red
-        status_text = 'HEALTHY ✓' if analysis.prediction_status == 'healthy' else 'STRESSED ⚠'
+        status_text = 'HEALTHY [OK]' if analysis.prediction_status == 'healthy' else 'STRESSED [!]'
 
         story = []
 
