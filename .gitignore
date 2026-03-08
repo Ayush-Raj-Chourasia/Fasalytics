@@ -17,13 +17,12 @@ __pycache__/
 *$py.class
 *.so
 .Python
-build/
 develop-eggs/
-dist/
 downloads/
 eggs/
 .eggs/
-lib/
+**/backend/lib/
+**/main/lib/
 lib64/
 parts/
 sdist/
@@ -159,9 +158,6 @@ dmypy.json
 _pycache/
 *.pickle
 *.pkl
-docs
-*.md
-!README.md
 
 stitch_analysis_results_detail_report (1)
 stitch_analysis_results_detail_report (2)

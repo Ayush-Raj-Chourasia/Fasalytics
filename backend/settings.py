@@ -20,6 +20,11 @@ DEBUG = os.environ.get('DEBUG', 'True').lower() in ('true', '1', 'yes')
 
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS', '*').split(',')
 
+# Azure App Service injects WEBSITE_HOSTNAME
+azure_hostname = os.environ.get('WEBSITE_HOSTNAME')
+if azure_hostname and azure_hostname not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append(azure_hostname)
+
 # Application definition
 INSTALLED_APPS = [
     'django.contrib.admin',
@@ -83,10 +88,16 @@ if DATABASE_URL:
         DATABASES['default'].setdefault('OPTIONS', {})
         DATABASES['default']['OPTIONS']['sslmode'] = 'require'
 else:
+    # On Azure, use /home/data/ for persistent SQLite storage
+    if os.environ.get('WEBSITE_HOSTNAME'):
+        db_path = '/home/data/db.sqlite3'
+        os.makedirs('/home/data', exist_ok=True)
+    else:
+        db_path = BASE_DIR / 'db.sqlite3'
     DATABASES = {
         'default': {
             'ENGINE': 'django.db.backends.sqlite3',
-            'NAME': BASE_DIR / 'db.sqlite3',
+            'NAME': db_path,
         }
     }
 
@@ -134,16 +145,22 @@ MEDIA_ROOT = BASE_DIR / 'media'
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 # CORS Configuration
+_cors_default = (
+    'http://localhost:3000,http://localhost:3001,http://localhost:5173,'
+    'http://127.0.0.1:3000,http://127.0.0.1:3001,http://127.0.0.1:5173,'
+    'http://localhost:8000,http://127.0.0.1:8000,'
+    'https://fasalytics.vercel.app'
+)
 CORS_ALLOWED_ORIGINS = [
     origin.strip() for origin in
-    os.environ.get('CORS_ALLOWED_ORIGINS',
-        'http://localhost:3000,http://localhost:3001,http://localhost:5173,'
-        'http://127.0.0.1:3000,http://127.0.0.1:3001,http://127.0.0.1:5173,'
-        'http://localhost:8000,http://127.0.0.1:8000,'
-        'https://fasalytics.vercel.app'
-    ).split(',')
+    os.environ.get('CORS_ALLOWED_ORIGINS', _cors_default).split(',')
     if origin.strip()
 ]
+# Add Azure hostname to CORS if running on Azure
+if azure_hostname:
+    azure_origin = f'https://{azure_hostname}'
+    if azure_origin not in CORS_ALLOWED_ORIGINS:
+        CORS_ALLOWED_ORIGINS.append(azure_origin)
 
 CORS_ALLOW_CREDENTIALS = True
 
@@ -155,6 +172,11 @@ CSRF_TRUSTED_ORIGINS = [
     ).split(',')
     if origin.strip()
 ]
+# Add Azure hostname to CSRF trusted origins
+if azure_hostname:
+    azure_csrf = f'https://{azure_hostname}'
+    if azure_csrf not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.append(azure_csrf)
 
 # REST Framework Configuration
 REST_FRAMEWORK = {
