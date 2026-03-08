@@ -59,9 +59,8 @@ def analyze_crop_api(request):
             except Exception as e:
                 return JsonResponse({'success': False, 'message': f'Image analysis failed: {e}'}, status=500)
 
-            crop_image.seek(0)
+            # Save analysis to DB (image saved separately to avoid field-name issues)
             analysis = CropAnalysis.objects.create(
-                image=crop_image,
                 farm_name=farm_name,
                 crop_type=crop_type,
                 soil_moisture=result.get('soil_moisture', 50.0),
@@ -74,6 +73,13 @@ def analyze_crop_api(request):
                 recommendation=result.get('recommendation', ''),
                 stress_reason=result.get('stress_reason', ''),
                 zone_map=result.get('zone_map', []),
+            )
+            # Attach image after record is created (safe regardless of field rename history)
+            crop_image.seek(0)
+            analysis.image.save(
+                getattr(crop_image, 'name', 'upload.jpg'),
+                crop_image,
+                save=True,
             )
             return JsonResponse({'success': True, 'id': analysis.id, 'message': 'Image analysis completed'}, status=201)
         
