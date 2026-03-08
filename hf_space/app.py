@@ -82,7 +82,7 @@ def load_model():
 
         checkpoint = torch.load(model_path, map_location=DEVICE)
 
-        m = CropHealthCNNLSTM(input_size=208, hidden_size=128, num_classes=2, sequence_length=10)
+        m = CropHealthCNNLSTM(input_size=208, hidden_size=256, num_classes=2, sequence_length=10)
         # Handle both raw state_dict and checkpoint dicts
         if isinstance(checkpoint, dict) and "model_state_dict" in checkpoint:
             m.load_state_dict(checkpoint["model_state_dict"])

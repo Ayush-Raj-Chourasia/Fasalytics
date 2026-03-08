@@ -1,6 +1,11 @@
 """
 CropHealthCNNLSTM model architecture.
 Must match EXACTLY the architecture used when training crop_health_model.pth.
+
+Actual architecture recovered from checkpoint state_dict keys:
+  cnn: Sequential(Linear→BN→ReLU→Dropout→Linear→BN→ReLU→Dropout→Linear)
+  lstm: 2-layer LSTM, input=256, hidden=256
+  classifier: Sequential(Linear→ReLU→Dropout→Linear)
 """
 
 import torch
@@ -8,60 +13,55 @@ import torch.nn as nn
 
 
 class CropHealthCNNLSTM(nn.Module):
-    def __init__(self, input_size=208, hidden_size=128, num_classes=2, sequence_length=10):
+    def __init__(self, input_size=208, hidden_size=256, num_classes=2, sequence_length=10):
         super(CropHealthCNNLSTM, self).__init__()
 
         self.sequence_length = sequence_length
         self.hidden_size = hidden_size
 
-        # CNN feature extractor
-        self.conv1 = nn.Conv1d(in_channels=1, out_channels=32, kernel_size=3, padding=1)
-        self.conv2 = nn.Conv1d(in_channels=32, out_channels=64, kernel_size=3, padding=1)
-        self.pool = nn.MaxPool1d(kernel_size=2, stride=2)
-        self.dropout_cnn = nn.Dropout(0.3)
+        # Dense feature extractor — matches training architecture
+        # Keys in checkpoint: cnn.0, cnn.1, cnn.4, cnn.5, cnn.8
+        self.cnn = nn.Sequential(
+            nn.Linear(input_size, 1024),   # cnn.0
+            nn.BatchNorm1d(1024),          # cnn.1
+            nn.ReLU(),                     # cnn.2
+            nn.Dropout(0.3),               # cnn.3
+            nn.Linear(1024, 512),          # cnn.4
+            nn.BatchNorm1d(512),           # cnn.5
+            nn.ReLU(),                     # cnn.6
+            nn.Dropout(0.3),               # cnn.7
+            nn.Linear(512, 256),           # cnn.8
+        )
 
-        # Calculate CNN output size
-        cnn_out_size = (input_size // 2) * 64
-
-        # LSTM
+        # LSTM: input_size=256 (cnn output), hidden_size=256
         self.lstm = nn.LSTM(
-            input_size=cnn_out_size,
+            input_size=256,
             hidden_size=hidden_size,
             num_layers=2,
             batch_first=True,
             dropout=0.3,
         )
 
-        # Classifier
-        self.fc1 = nn.Linear(hidden_size, 64)
-        self.fc2 = nn.Linear(64, num_classes)
-        self.relu = nn.ReLU()
-        self.dropout_fc = nn.Dropout(0.5)
+        # Classifier — keys: classifier.0, classifier.3
+        self.classifier = nn.Sequential(
+            nn.Linear(hidden_size, 256),   # classifier.0
+            nn.ReLU(),                     # classifier.1
+            nn.Dropout(0.3),               # classifier.2
+            nn.Linear(256, num_classes),   # classifier.3
+        )
 
     def forward(self, x):
         # x: (batch, sequence_length, input_size)
-        batch_size = x.size(0)
-        seq_len = x.size(1)
+        batch_size, seq_len, _ = x.shape
 
-        # Reshape for CNN: (batch * seq_len, 1, input_size)
-        x = x.view(batch_size * seq_len, 1, -1)
-        x = self.relu(self.conv1(x))
-        x = self.relu(self.conv2(x))
-        x = self.pool(x)
-        x = self.dropout_cnn(x)
-
-        # Flatten CNN output: (batch * seq_len, cnn_out_size)
-        x = x.view(batch_size * seq_len, -1)
-
-        # Reshape for LSTM: (batch, seq_len, cnn_out_size)
-        x = x.view(batch_size, seq_len, -1)
+        # Apply dense feature extractor to each timestep
+        x_flat = x.view(batch_size * seq_len, -1)   # (batch*seq, input_size)
+        feat = self.cnn(x_flat)                      # (batch*seq, 256)
+        feat = feat.view(batch_size, seq_len, -1)    # (batch, seq, 256)
 
         # LSTM
-        lstm_out, _ = self.lstm(x)
+        lstm_out, _ = self.lstm(feat)
         x = lstm_out[:, -1, :]  # last timestep
 
-        # Classifier
-        x = self.relu(self.fc1(x))
-        x = self.dropout_fc(x)
-        x = self.fc2(x)
-        return x
+        # Classify
+        return self.classifier(x)
