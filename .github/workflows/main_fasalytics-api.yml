@@ -75,11 +75,30 @@ jobs:
         with:
           name: python-app
 
-      - name: Deploy to Azure Web App
-        uses: azure/webapps-deploy@v3
-        with:
-          app-name: 'fasalytics-api'
-          slot-name: 'Production'
-          publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
-          package: release.zip
+      - name: Deploy via Kudu REST API (direct zip deploy)
+        env:
+          PUBLISH_PROFILE: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+        run: |
+          # Extract Kudu credentials from publish profile XML
+          USER=$(echo "$PUBLISH_PROFILE" | grep -oP 'userName="\K[^"]+' | head -1)
+          PASS=$(echo "$PUBLISH_PROFILE" | grep -oP 'userPWD="\K[^"]+' | head -1)
+          echo "Deploying zip to Azure Kudu..."
+          HTTP_STATUS=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X POST \
+            --user "$USER:$PASS" \
+            --header "Content-Type: application/zip" \
+            --data-binary @release.zip \
+            "https://fasalytics-api.scm.azurewebsites.net/api/zipdeploy?isAsync=false")
+          echo "Deploy HTTP status: $HTTP_STATUS"
+          if [ "$HTTP_STATUS" != "200" ] && [ "$HTTP_STATUS" != "204" ]; then
+            echo "Deployment failed with status $HTTP_STATUS"
+            exit 1
+          fi
+          echo "Deployment succeeded. Restarting app..."
+          curl -s -X POST \
+            --user "$USER:$PASS" \
+            "https://fasalytics-api.scm.azurewebsites.net/api/command" \
+            -H "Content-Type: application/json" \
+            -d '{"command":"echo done"}' || true
+          echo "Done."
 
