@@ -37,6 +37,11 @@ def get_csrf_token(request):
     csrf_token = get_token(request)
     return JsonResponse({'csrfToken': csrf_token})
 
+@require_http_methods(["GET"])
+def version_api(request):
+    """Return deployed code version for diagnostics"""
+    return JsonResponse({'version': '2026-03-09', 'image_fix': 'analysis.image.save()'})
+
 @require_http_methods(["POST", "OPTIONS"])
 @csrf_exempt
 def analyze_crop_api(request):

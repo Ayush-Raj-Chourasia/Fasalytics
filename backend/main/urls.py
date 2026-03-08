@@ -9,6 +9,9 @@ urlpatterns = [
     # CSRF Token endpoint
     path('api/csrf-token/', views.get_csrf_token, name='get_csrf_token'),
     
+    # Version diagnostic endpoint
+    path('api/version/', views.version_api, name='version_api'),
+    
     # API Endpoints for React Frontend
     path('api/analyze/', views.analyze_crop_api, name='analyze_crop_api'),
     path('api/results/<int:pk>/', views.crop_results_api, name='crop_results_api'),
