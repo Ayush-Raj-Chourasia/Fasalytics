@@ -39,7 +39,14 @@ app.add_middleware(
 
 MODEL = None
 DEVICE = None
-DISEASE_CLASSIFIER = None
+
+# HF Inference API endpoint for PlantVillage MobileNetV2 (no local memory needed)
+HF_INFERENCE_URL = (
+    "https://api-inference.huggingface.co/models/"
+    "linkanjarad/mobilenet_v2_1.0_224-plant-disease-identification"
+)
+# Optional: set HF_TOKEN as a Space secret to get higher rate limits
+_HF_TOKEN = os.environ.get("HF_TOKEN", "")
 
 # PlantVillage crops recognised by the pretrained classifier
 VALID_CROPS = {
@@ -90,20 +97,6 @@ def load_model():
         print("CNN-LSTM model loaded successfully.")
     except Exception as e:
         print(f"CNN-LSTM model load failed: {e}")
-
-    # --- Load pretrained PlantVillage disease classifier ---
-    global DISEASE_CLASSIFIER
-    try:
-        from transformers import pipeline as hf_pipeline
-        print("Loading PlantVillage disease classifier (MobileNetV2)...")
-        DISEASE_CLASSIFIER = hf_pipeline(
-            "image-classification",
-            model="linkanjarad/mobilenet_v2_1.0_224-plant-disease-identification",
-            device=-1,  # CPU
-        )
-        print("Disease classifier loaded successfully.")
-    except Exception as e:
-        print(f"Disease classifier load failed: {e}")
 
     return MODEL is not None
 
@@ -319,81 +312,72 @@ def classify_plant_disease(image_bytes: bytes):
     from PIL import Image
     img = Image.open(io.BytesIO(image_bytes)).convert("RGB")
 
-    # ── Pretrained path ───────────────────────────────────────────────────────
-    if DISEASE_CLASSIFIER is not None:
-        try:
-            results = DISEASE_CLASSIFIER(img, top_k=3)
-            top    = results[0]
-            label  = top["label"]   # e.g. "Tomato___Early_blight"
-            score  = top["score"]   # 0-1
+    # ── HF Inference API path ─────────────────────────────────────────────
+    try:
+        import requests as _req
+        headers = {"Authorization": f"Bearer {_HF_TOKEN}"} if _HF_TOKEN else {}
+        resp = _req.post(HF_INFERENCE_URL, headers=headers,
+                         data=image_bytes, timeout=20)
+        if resp.status_code == 200:
+            results = resp.json()  # list of {label, score}
+            if isinstance(results, list) and results:
+                top   = results[0]
+                label = top["label"]
+                score = top["score"]
 
-            # Parse crop and condition
-            if "___" in label:
-                crop_raw, condition = label.split("___", 1)
-            else:
-                crop_raw, condition = label, "unknown"
+                # Parse crop and condition
+                if "___" in label:
+                    crop_raw, condition = label.split("___", 1)
+                else:
+                    crop_raw, condition = label, "unknown"
 
-            # Normalise: drop trailing parenthetical variants & commas
-            crop = crop_raw.split("(")[0].strip().split(",")[0].strip()
+                crop = crop_raw.split("(")[0].strip().split(",")[0].strip()
 
-            # Reject if not a recognised agricultural crop
-            if crop not in VALID_CROPS:
-                return (
-                    False,
-                    "This image does not appear to contain a recognisable agricultural crop. "
-                    "Please upload a photo of a crop leaf or field.",
-                    None, None, 0.0, [], None,
-                )
+                if crop not in VALID_CROPS or score < 0.20:
+                    return (
+                        False,
+                        "This image does not appear to contain a recognisable crop. "
+                        "Please upload a clear photo of a crop leaf or field.",
+                        None, None, 0.0, [], None,
+                    )
 
-            # Reject very low-confidence predictions (likely not a plant)
-            if score < 0.20:
-                return (
-                    False,
-                    "Crop is not clearly visible in the image. "
-                    "Please upload a closer, well-lit photo.",
-                    None, None, 0.0, [], None,
-                )
+                severity   = _get_disease_severity(condition)
+                is_healthy = condition.lower() == "healthy"
 
-            severity   = _get_disease_severity(condition)
-            is_healthy = condition.lower() == "healthy"
+                if is_healthy:
+                    proxy = SensorData(
+                        soil_moisture=68.0, temperature=26.0,
+                        humidity=58.0, leaf_wetness=0.18, ph_level=6.5,
+                    )
+                else:
+                    sm  = max(22.0, 68.0 - severity * 11)
+                    hum = min(88.0, 55.0 + severity * 8)
+                    lw  = min(0.90,  0.20 + severity * 0.16)
+                    proxy = SensorData(
+                        soil_moisture=sm, temperature=28.0,
+                        humidity=hum, leaf_wetness=lw, ph_level=6.5,
+                    )
 
-            # Map severity → proxy sensor values for CNN-LSTM
-            if is_healthy:
-                proxy = SensorData(
-                    soil_moisture=68.0, temperature=26.0,
-                    humidity=58.0, leaf_wetness=0.18, ph_level=6.5,
-                )
-            else:
-                sm  = max(22.0, 68.0 - severity * 11)
-                hum = min(88.0, 55.0 + severity * 8)
-                lw  = min(0.90,  0.20 + severity * 0.16)
-                proxy = SensorData(
-                    soil_moisture=sm, temperature=28.0,
-                    humidity=hum, leaf_wetness=lw, ph_level=6.5,
-                )
-
-            # Human-readable findings
-            top3_labels = [
-                f"{r['label'].split('___')[-1].replace('_', ' ')} ({r['score']*100:.1f}%)"
-                for r in results
-            ]
-            raw_condition = condition.replace("_", " ")
-            if is_healthy:
-                findings = [
-                    f"Crop identified: {crop} — condition: Healthy (confidence {score*100:.1f}%)",
-                    f"No disease detected. Top predictions: {', '.join(top3_labels)}",
+                top3_labels = [
+                    f"{r['label'].split('___')[-1].replace('_', ' ')} ({r['score']*100:.1f}%)"
+                    for r in results[:3]
                 ]
-            else:
-                sev_word = ["Mild", "Mild", "Moderate", "Severe", "Critical"][min(severity, 4)]
-                findings = [
-                    f"Crop identified: {crop} — disease: {raw_condition} ({sev_word}, confidence {score*100:.1f}%)",
-                    f"Top 3 predictions: {', '.join(top3_labels)}",
-                ]
+                raw_condition = condition.replace("_", " ")
+                if is_healthy:
+                    findings = [
+                        f"Crop identified: {crop} — condition: Healthy (confidence {score*100:.1f}%)",
+                        f"No disease detected. Top predictions: {', '.join(top3_labels)}",
+                    ]
+                else:
+                    sev_word = ["Mild", "Mild", "Moderate", "Severe", "Critical"][min(severity, 4)]
+                    findings = [
+                        f"Crop identified: {crop} — disease: {raw_condition} ({sev_word}, confidence {score*100:.1f}%)",
+                        f"Top 3 predictions: {', '.join(top3_labels)}",
+                    ]
 
-            return True, None, crop, condition, float(score * 100), findings, proxy
-
-        except Exception as exc:
-            print(f"Disease classifier inference error: {exc}. Falling back to pixel analysis.")
+                return True, None, crop, condition, float(score * 100), findings, proxy
+    except Exception as exc:
+        print(f"HF Inference API error: {exc}. Falling back to pixel analysis.")
 
     # ── Pixel-counting fallback (model not yet loaded) ─────────────────────
     img_small = img.resize((224, 224))
@@ -488,16 +472,16 @@ async def predict_image(file: UploadFile = File(...)):
     try:
         if MODEL is not None:
             status, confidence, healthy_prob, stressed_prob = pytorch_predict(proxy)
-            method = "mobilenet_v2_plantvillage+cnn_lstm"
+            method = "hf_inference_api+cnn_lstm"
         else:
             status, confidence, healthy_prob, stressed_prob = rule_based_predict(proxy)
-            method = "mobilenet_v2_plantvillage+rule_based"
+            method = "hf_inference_api+rule_based"
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Model inference error: {e}")
 
-    # ── Override status from disease classifier when confidence is high ──────
+    # ── Override status from HF Inference API when confidence is high ──────
     # If the pretrained model is very confident, trust it over the CNN-LSTM proxy.
-    if DISEASE_CLASSIFIER is not None and vis_conf >= 40.0:
+    if vis_conf >= 40.0:
         is_healthy_by_vision = (condition or "").lower() == "healthy"
         status     = "healthy" if is_healthy_by_vision else "stressed"
         confidence = vis_conf
