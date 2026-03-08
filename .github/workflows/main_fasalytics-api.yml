@@ -47,17 +47,23 @@ jobs:
           print('Views import OK')
           "
 
+      - name: Zip artifact for deployment
+        run: |
+          zip -r release.zip . \
+            --exclude "*.git*" \
+            --exclude "*__pycache__*" \
+            --exclude "*.pyc" \
+            --exclude "testenv/*" \
+            --exclude "antenv/*" \
+            --exclude "venv/*" \
+            --exclude "*.sqlite3" \
+            --exclude "node_modules/*"
+
       - name: Upload artifact for deployment
         uses: actions/upload-artifact@v4
         with:
           name: python-app
-          path: |
-            .
-            !testenv/**
-            !antenv/**
-            !.git/**
-            !**/__pycache__/**
-            !*.pyc
+          path: release.zip
 
   deploy:
     runs-on: ubuntu-latest
@@ -75,4 +81,5 @@ jobs:
           app-name: 'fasalytics-api'
           slot-name: 'Production'
           publish-profile: ${{ secrets.AZURE_WEBAPP_PUBLISH_PROFILE }}
+          package: release.zip
 
