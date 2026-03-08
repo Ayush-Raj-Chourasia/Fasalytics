@@ -20,14 +20,12 @@ jobs:
         with:
           python-version: '3.11'
 
-      - name: Install dependencies for testing
+      - name: Install dependencies
         run: |
-          python -m venv testenv
-          source testenv/bin/activate
           pip install --upgrade pip
           pip install -r requirement.txt
 
-      - name: Test Django starts without errors
+      - name: Verify Django starts
         env:
           SECRET_KEY: ci-test-key-not-production
           DEBUG: "False"
@@ -35,14 +33,15 @@ jobs:
           HF_SPACE_URL: ""
           DJANGO_SETTINGS_MODULE: backend.settings
         run: |
-          source testenv/bin/activate
           python -c "
-          import os, django, sys
-          sys.path.insert(0, os.getcwd())
-          os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'backend.settings')
+          import os, sys, django
+          os.environ['DJANGO_SETTINGS_MODULE'] = 'backend.settings'
+          os.environ.setdefault('SECRET_KEY', 'ci-test-key')
+          os.environ.setdefault('DEBUG', 'False')
+          os.environ.setdefault('ALLOWED_HOSTS', '*')
           django.setup()
           print('Django setup OK')
-          from main.views import analyze_crop_api
+          from backend.main.views import analyze_crop_api
           print('Views import OK')
           "
 
