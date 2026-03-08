@@ -12,20 +12,23 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Set up Python
-        uses: actions/setup-python@v5
-        with:
-          python-version: '3.11'
-
       - name: Create deployment package
         run: |
+          # Exclude everything that should NOT go to Azure
           zip -r deploy.zip . \
-            -x "venv/*" ".venv/*" "node_modules/*" "frontend/node_modules/*" \
-            ".git/*" ".github/*" "__pycache__/*" "*.pyc" \
-            "frontend/src/*" "frontend/public/*" "docs/*" \
-            "stitch_analysis_results_detail_report*" "tests/*" \
-            "*.md"
-          ls -lh deploy.zip
+            -x "venv/*" ".venv/*" \
+            "node_modules/*" "frontend/node_modules/*" \
+            ".git/*" ".github/*" \
+            "**/__pycache__/*" "**/*.pyc" "**/*.pyo" \
+            "frontend/src/*" "frontend/public/*" \
+            "docs/*" "tests/*" \
+            "stitch_analysis_results_detail_report*" \
+            "hf_space/*" \
+            "azure_logs*" \
+            "*.zip"
+          echo "Package size: $(du -sh deploy.zip)"
+          echo "Verifying key files:"
+          unzip -l deploy.zip | grep -E '(manage.py|requirements.txt|startup.sh|backend/settings|backend/wsgi)'
 
       - name: Deploy to Azure Web App
         uses: azure/webapps-deploy@v3
