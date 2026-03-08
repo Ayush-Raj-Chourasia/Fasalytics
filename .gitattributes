@@ -1,0 +1,10 @@
+# Force LF line endings for shell scripts on all platforms
+*.sh text eol=lf
+Procfile text eol=lf
+
+# Windows-style line endings for Windows files
+*.bat text eol=crlf
+*.cmd text eol=crlf
+
+# Everything else — let git auto-detect
+* text=auto
