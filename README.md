@@ -426,5 +426,4 @@ python manage.py runserver
 * SMS/WhatsApp alerts for farmers.
 * Multi-language support for wider adoption.
 
----
 
